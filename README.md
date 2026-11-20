@@ -14,6 +14,18 @@ Open `index.html` in je browser. Dat is alles.
 - Elke puzzel heeft een code, bijvoorbeeld `9-expert-482113`. Met dezelfde code krijgt iedereen precies dezelfde puzzel. De code staat ook in de adresbalk (`index.html#9-expert-482113`).
 - Afdrukken kan met `Ctrl+P`. Dan wordt alleen het rooster afgedrukt.
 
+## Puzzelpret: de kinderversie
+
+Open `kids.html` voor een versie voor kinderen van 5 tot 8 jaar:
+
+- Plaatjes in plaats van cijfers: dieren, fruit of sprookjes. Cijfers kan ook.
+- Alleen 4×4 en 6×6, met de moeilijkheid in sterren (★ tot ★★★).
+- Twee manieren om te spelen: tik eerst een leeg vakje en dan een plaatje, of kies eerst een plaatje en "stempel" het op de vakjes.
+- Een uiltje legt uit wat er mis is ("Er staat al een 🐱 in deze rij") en moedigt aan.
+- **Help mij** legt een goed plaatje neer, het liefst op een plek waar maar één plaatje past.
+- Na het oplossen: confetti, 1 tot 3 sterren en een sticker voor in het stickerboek.
+- Geen timer. Het geluid en het meteen tonen van fouten kun je uitzetten.
+
 ## Roosters
 
 | Grootte | Blokken | Cijfers |

@@ -1,0 +1,947 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Puzzelpret</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: één kolom zoals een speelkaart op tafel; instellingen boven, uiltje en speelbord in het midden, plaatjes eronder, stickerboek onderaan.
+   Bewust één vrolijke lichte stijl (speelkamer), ook als het apparaat op donker staat. */
+:root {
+  --bg: #efe9ff;
+  --surface: #ffffff;
+  --ink: #3a2b5c;
+  --muted: #76699a;
+  --pink: #ff4f9a;
+  --pink-soft: #ffe0ee;
+  --mint: #22b48f;
+  --mint-soft: #d9f6ec;
+  --sun: #ffc22e;
+  --sun-soft: #fff1c2;
+  --sky: #3fa9f5;
+  --sky-soft: #dcefff;
+  --lilac: #8f6cff;
+  --lilac-soft: #e9e2ff;
+  --red: #e2405a;
+  --red-soft: #ffe1e6;
+  --shadow: 0 4px 0 rgb(58 43 92 / 0.12);
+
+  --font: "Fredoka", "Baloo 2", "Chalkboard SE", "Comic Sans MS", system-ui, sans-serif;
+  --emoji: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 18px;
+  line-height: 1.4;
+  background:
+    radial-gradient(circle at 8% 12%, var(--pink-soft) 0 90px, transparent 91px),
+    radial-gradient(circle at 92% 30%, var(--sun-soft) 0 70px, transparent 71px),
+    radial-gradient(circle at 15% 78%, var(--mint-soft) 0 80px, transparent 81px),
+    radial-gradient(circle at 88% 88%, var(--sky-soft) 0 110px, transparent 111px),
+    var(--bg);
+  background-attachment: fixed;
+}
+button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 4px solid var(--lilac); outline-offset: 2px; }
+
+.wrap {
+  max-width: 600px;
+  margin: 0 auto;
+  padding-block: 20px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid;
+  gap: 18px;
+}
+
+header { text-align: center; display: grid; gap: 4px; }
+h1 {
+  margin: 0;
+  font-weight: 700;
+  font-size: clamp(2.6rem, 2rem + 3vw, 3.6rem);
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+h1 span { display: inline-block; text-shadow: 0 3px 0 rgb(58 43 92 / 0.15); }
+h1 span:nth-child(6n+1) { color: var(--pink); transform: rotate(-4deg); }
+h1 span:nth-child(6n+2) { color: var(--sun); transform: rotate(3deg) translateY(-2px); }
+h1 span:nth-child(6n+3) { color: var(--mint); transform: rotate(-2deg); }
+h1 span:nth-child(6n+4) { color: var(--sky); transform: rotate(4deg) translateY(2px); }
+h1 span:nth-child(6n+5) { color: var(--lilac); transform: rotate(-3deg); }
+h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
+.rule { margin: 0 auto; max-width: 34ch; color: var(--muted); font-size: 1rem; text-wrap: balance; }
+
+.card {
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 14px;
+}
+.group-label { font-weight: 600; font-size: 0.95rem; margin: 0 0 6px; color: var(--muted); }
+
+.choices { display: grid; gap: 8px; }
+.choices.themes { grid-template-columns: repeat(4, 1fr); }
+.choices.two { grid-template-columns: repeat(2, 1fr); }
+.choices.three { grid-template-columns: repeat(3, 1fr); }
+.size-level { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 12px; }
+@media (max-width: 560px) { .size-level { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 420px) { .choices.themes { grid-template-columns: repeat(2, 1fr); } }
+.choice {
+  border: 3px solid transparent;
+  background: var(--lilac-soft);
+  border-radius: 16px;
+  padding: 8px 6px;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  min-width: 0;
+  transition: transform 0.12s;
+}
+.choice:hover { transform: translateY(-2px); }
+.choice[aria-pressed="true"] { border-color: var(--pink); background: var(--pink-soft); }
+.choice .sample { font-family: var(--emoji), var(--font); font-size: 1.35rem; letter-spacing: 0.05em; line-height: 1.2; }
+.choice .sample.digits { font-family: var(--font); font-weight: 700; }
+.choice .sample.digits b:nth-child(1) { color: var(--pink); }
+.choice .sample.digits b:nth-child(2) { color: var(--sun); }
+.choice .sample.digits b:nth-child(3) { color: var(--mint); }
+.choice .stars { color: var(--sun); font-size: 1.3rem; letter-spacing: 0.04em; line-height: 1.2; text-shadow: 0 1px 0 rgb(58 43 92 / 0.25); }
+.choice .grid-pic { display: grid; gap: 2px; margin: 4px 0 2px; }
+.choice .grid-pic i { width: 9px; height: 9px; border-radius: 2px; background: var(--lilac); opacity: 0.55; }
+
+.big-btn {
+  border: 0;
+  border-radius: 18px;
+  padding: 14px 18px;
+  font-weight: 700;
+  font-size: 1.3rem;
+  background: var(--pink);
+  color: #fff;
+  box-shadow: 0 5px 0 #c22c6f;
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+.big-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #c22c6f; }
+.big-btn.green { background: var(--mint); box-shadow: 0 5px 0 #138167; }
+.big-btn.green:active { box-shadow: 0 1px 0 #138167; }
+
+/* --- uiltje --- */
+.owl-row { display: flex; align-items: flex-end; gap: 10px; }
+.owl { font-family: var(--emoji); font-size: 3rem; line-height: 1; flex: none; }
+.bubble {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  background: var(--surface);
+  border-radius: 20px 20px 20px 6px;
+  padding: 12px 16px;
+  box-shadow: var(--shadow);
+  font-weight: 500;
+  min-height: 3.2em;
+  display: flex;
+  align-items: center;
+}
+.bubble .sym { font-family: var(--emoji), var(--font); }
+.bubble.oops { background: var(--red-soft); }
+.bubble.yay { background: var(--mint-soft); }
+
+/* --- speelbord --- */
+.board-shell { container-type: inline-size; width: 100%; max-width: 520px; justify-self: center; }
+.board {
+  --n: 4;
+  display: grid;
+  gap: 8px;
+  padding: 8px;
+  background: var(--surface);
+  border-radius: 26px;
+  box-shadow: var(--shadow);
+  touch-action: manipulation;
+}
+.box { display: grid; gap: 5px; padding: 5px; border-radius: 18px; }
+.box.tint-a { background: var(--lilac-soft); }
+.box.tint-b { background: var(--sky-soft); }
+.cell {
+  aspect-ratio: 1;
+  min-width: 0;
+  border: 3px solid transparent;
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: calc(100cqw / var(--n) * 0.46);
+  line-height: 1;
+  position: relative;
+}
+.cell.given { background: rgb(255 255 255 / 0.45); cursor: default; }
+.cell.empty { border: 3px dashed rgb(143 108 255 / 0.35); }
+.cell.same { background: var(--sun-soft); }
+.cell.given.same { background: var(--sun-soft); }
+.cell.selected { border: 3px solid var(--pink); background: var(--pink-soft); }
+.cell.wrong { border: 3px solid var(--red); background: var(--red-soft); }
+.cell.flash { animation: flash 0.9s ease-in-out 2; }
+.cell .sym { font-family: var(--emoji), var(--font); display: block; }
+.cell .sym.digit { font-family: var(--font); font-weight: 700; font-size: 1.15em; }
+.cell.placed .sym { animation: pop 0.28s ease-out; }
+.cell.wrong .sym { animation: wiggle 0.45s ease-in-out; }
+.cell.hinted::after {
+  content: "✦";
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  font-size: max(10px, calc(100cqw / var(--n) * 0.13));
+  color: var(--sun);
+}
+
+.d1 { color: var(--pink); } .d2 { color: #f08a00; } .d3 { color: var(--mint); }
+.d4 { color: var(--sky); } .d5 { color: var(--lilac); } .d6 { color: var(--red); }
+
+@keyframes pop { 0% { transform: scale(0.3); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+@keyframes wiggle { 0%,100% { transform: rotate(0); } 20% { transform: rotate(-14deg); } 40% { transform: rotate(12deg); } 60% { transform: rotate(-8deg); } 80% { transform: rotate(5deg); } }
+@keyframes flash { 0%,100% { box-shadow: none; } 50% { box-shadow: 0 0 0 4px var(--red); } }
+
+/* --- plaatjes kiezen --- */
+.palette { display: grid; gap: 8px; grid-template-columns: repeat(var(--cols, 5), 1fr); }
+.pick {
+  position: relative;
+  aspect-ratio: 1;
+  border: 3px solid transparent;
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  display: grid;
+  place-items: center;
+  font-size: clamp(1.8rem, 7vw, 2.6rem);
+  line-height: 1;
+  padding: 0;
+  min-width: 0;
+  transition: transform 0.12s;
+}
+.pick .sym { font-family: var(--emoji), var(--font); }
+.pick .sym.digit { font-family: var(--font); font-weight: 700; }
+.pick[aria-pressed="true"] { border-color: var(--pink); background: var(--pink-soft); transform: translateY(-4px); }
+.pick .left {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--lilac);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: grid;
+  place-items: center;
+  padding: 0 5px;
+}
+.pick .left.done { background: var(--mint); }
+.pick.eraser { background: var(--sky-soft); font-size: clamp(1rem, 4vw, 1.2rem); font-weight: 600; gap: 0; }
+.pick.eraser .sym { font-size: 1.7em; }
+
+.actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.small-btn {
+  border: 0;
+  border-radius: 14px;
+  padding: 10px 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-weight: 600;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.small-btn .ico { font-family: var(--emoji); font-size: 1.2em; }
+.small-btn.help { background: var(--sun-soft); }
+.small-btn.armed { background: var(--red-soft); color: var(--red); }
+.small-btn:disabled { opacity: 0.45; cursor: default; }
+.toggles { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.toggle { border: 0; border-radius: 999px; padding: 6px 14px; background: rgb(255 255 255 / 0.7); font-size: 0.9rem; font-weight: 500; color: var(--muted); }
+.toggle[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.toggle .ico { font-family: var(--emoji); }
+
+/* --- stickerboek --- */
+.stickers h2 { margin: 0; font-size: 1.25rem; font-weight: 700; }
+.sticker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 6px; }
+.sticker {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  font-family: var(--emoji);
+  font-size: 1.7rem;
+  background: var(--lilac-soft);
+  border-radius: 50%;
+}
+.sticker.new { animation: pop 0.5s ease-out; background: var(--sun-soft); }
+.empty-note { margin: 0; color: var(--muted); font-size: 0.95rem; }
+.grown-ups { margin: 0; font-size: 0.8rem; color: var(--muted); text-align: center; }
+.grown-ups a { color: var(--lilac); }
+
+/* --- feest --- */
+.party {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: rgb(58 43 92 / 0.35);
+  z-index: 20;
+}
+.party-card {
+  background: var(--surface);
+  border-radius: 28px;
+  padding: 24px 22px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+  display: grid;
+  gap: 10px;
+  box-shadow: 0 8px 0 rgb(58 43 92 / 0.18);
+  animation: pop 0.4s ease-out;
+}
+.party-card h2 { margin: 0; font-size: 2.6rem; color: var(--pink); line-height: 1; }
+.party-stars { font-size: 2.8rem; letter-spacing: 0.06em; color: var(--sun); text-shadow: 0 2px 0 rgb(58 43 92 / 0.2); }
+.party-stars .off { color: #e4ddf3; text-shadow: none; }
+.party-sticker { font-family: var(--emoji); font-size: 3.4rem; line-height: 1; }
+.party-card p { margin: 0; }
+.party-card .row { display: grid; gap: 8px; }
+.link-btn { border: 0; background: none; color: var(--muted); font-weight: 500; text-decoration: underline; padding: 6px; }
+#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 30; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+@media print {
+  body { background: #fff; }
+  .settings, .owl-row, .palette, .actions, .toggles, .stickers, .grown-ups, .rule { display: none !important; }
+  .board, .card { box-shadow: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 aria-label="Puzzelpret"><span>P</span><span>u</span><span>z</span><span>z</span><span>e</span><span>l</span><span>p</span><span>r</span><span>e</span><span>t</span></h1>
+    <p class="rule">Elk plaatje mag maar één keer in elke rij, elke kolom en elk vak.</p>
+  </header>
+
+  <section class="card settings" aria-label="Kies je puzzel">
+    <div>
+      <p class="group-label" id="theme-label">Plaatjes</p>
+      <div class="choices themes" id="themes" role="group" aria-labelledby="theme-label"></div>
+    </div>
+    <div class="size-level">
+      <div>
+        <p class="group-label" id="size-label">Hoe groot?</p>
+        <div class="choices two" id="sizes" role="group" aria-labelledby="size-label">
+          <button class="choice" type="button" id="size-4" data-size="4">
+            <span class="grid-pic" style="grid-template-columns: repeat(4, 9px)" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>4 × 4
+          </button>
+          <button class="choice" type="button" id="size-6" data-size="6">
+            <span class="grid-pic" style="grid-template-columns: repeat(6, 9px)" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>6 × 6
+          </button>
+        </div>
+      </div>
+      <div>
+        <p class="group-label" id="level-label">Hoe moeilijk?</p>
+        <div class="choices three" id="levels" role="group" aria-labelledby="level-label">
+          <button class="choice" type="button" id="level-makkelijk" data-level="makkelijk" aria-label="Makkelijk"><span class="stars">★</span>Makkelijk</button>
+          <button class="choice" type="button" id="level-gemiddeld" data-level="gemiddeld" aria-label="Gemiddeld"><span class="stars">★★</span>Gemiddeld</button>
+          <button class="choice" type="button" id="level-moeilijk" data-level="moeilijk" aria-label="Moeilijk"><span class="stars">★★★</span>Moeilijk</button>
+        </div>
+      </div>
+    </div>
+    <button class="big-btn" type="button" id="new-game">Nieuwe puzzel!</button>
+  </section>
+
+  <div class="owl-row">
+    <div class="owl" aria-hidden="true">🦉</div>
+    <div class="bubble" id="bubble" role="status" aria-live="polite">Hallo! Kies een plaatje en tik op een leeg vakje.</div>
+  </div>
+
+  <div class="board-shell">
+    <div class="board" id="board" role="grid" aria-label="Puzzel"></div>
+  </div>
+
+  <div class="palette" id="palette" aria-label="Plaatjes om neer te leggen"></div>
+
+  <div class="actions">
+    <button class="small-btn help" type="button" id="hint"><span class="ico" aria-hidden="true">💡</span> Help mij</button>
+    <button class="small-btn" type="button" id="reset"><span class="ico" aria-hidden="true">🔄</span> Opnieuw</button>
+  </div>
+  <div class="toggles">
+    <button class="toggle" type="button" id="sound-toggle" aria-pressed="true"><span class="ico" aria-hidden="true">🔊</span> Geluid</button>
+    <button class="toggle" type="button" id="mistake-toggle" aria-pressed="true"><span class="ico" aria-hidden="true">👀</span> Fouten meteen laten zien</button>
+  </div>
+
+  <section class="card stickers" aria-labelledby="sticker-title">
+    <h2 id="sticker-title">Mijn stickerboek</h2>
+    <div class="sticker-grid" id="sticker-grid"></div>
+    <p class="empty-note" id="sticker-empty">Los een puzzel op en verdien je eerste sticker!</p>
+  </section>
+
+  <p class="grown-ups">Voor grote mensen: <a href="index.html">Sudokumaker</a> met cijfers, 9×9 en vier niveaus.</p>
+</div>
+
+<div class="party" id="party" hidden>
+  <div class="party-card" role="dialog" aria-modal="true" aria-labelledby="party-title">
+    <h2 id="party-title">Hoera!</h2>
+    <p>Je hebt de puzzel opgelost!</p>
+    <div class="party-stars" id="party-stars"></div>
+    <p>Je nieuwe sticker:</p>
+    <div class="party-sticker" id="party-sticker"></div>
+    <div class="row">
+      <button class="big-btn green" type="button" id="again">Nog een puzzel!</button>
+      <button class="link-btn" type="button" id="close-party">Puzzel bekijken</button>
+    </div>
+  </div>
+</div>
+<canvas id="confetti" hidden></canvas>
+
+<script src="sudoku.js"></script>
+<script>
+(function () {
+  'use strict';
+  const S = window.Sudoku;
+  const STORE_KEY = 'puzzelpret:v1';
+
+  const THEMES = {
+    dieren:    { label: 'Dieren',    symbols: ['🐱', '🐶', '🐰', '🦊', '🐼', '🐸'], names: ['poes', 'hond', 'konijn', 'vos', 'panda', 'kikker'] },
+    fruit:     { label: 'Fruit',     symbols: ['🍓', '🍌', '🍇', '🍊', '🍉', '🍒'], names: ['aardbei', 'banaan', 'druiven', 'sinaasappel', 'watermeloen', 'kersen'] },
+    sprookjes: { label: 'Sprookjes', symbols: ['🦄', '🌈', '🌙', '🌸', '👑', '🦋'], names: ['eenhoorn', 'regenboog', 'maan', 'bloem', 'kroon', 'vlinder'] },
+    cijfers:   { label: 'Cijfers',   symbols: ['1', '2', '3', '4', '5', '6'], names: ['1', '2', '3', '4', '5', '6'], digits: true },
+  };
+  const STICKERS = ['🐞', '🌻', '🍦', '🎈', '🐳', '🦄', '🌟', '🍭', '🐢', '🦁', '🐝', '🍩', '🐙', '🌷', '🦒', '🧁', '🐧', '🍀', '🦜', '🎀', '🐠', '🍉', '🐨', '🪁', '🐬', '🌼', '🦩', '🍪', '🐿️', '🎠'];
+  const CHEERS = ['Goed zo!', 'Super!', 'Knap hoor!', 'Wauw!', 'Ga zo door!', 'Top!', 'Heel goed!', 'Jij kan dit!'];
+
+  const $ = (id) => document.getElementById(id);
+  const els = {
+    board: $('board'), palette: $('palette'), bubble: $('bubble'), themes: $('themes'),
+    party: $('party'), partyStars: $('party-stars'), partySticker: $('party-sticker'),
+    stickerGrid: $('sticker-grid'), stickerEmpty: $('sticker-empty'), reset: $('reset'),
+    sound: $('sound-toggle'), mistakes: $('mistake-toggle'), confetti: $('confetti'),
+  };
+
+  // ------------------------------------------------------------ opslag
+  const saved = (function () { try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null') || {}; } catch (e) { return {}; } })();
+  const settings = Object.assign({ theme: 'dieren', size: 4, level: 'makkelijk', sound: true, showMistakes: true }, saved.settings || {});
+  if (!THEMES[settings.theme]) settings.theme = 'dieren';
+  if (settings.size !== 4 && settings.size !== 6) settings.size = 4;
+  if (['makkelijk', 'gemiddeld', 'moeilijk'].indexOf(settings.level) < 0) settings.level = 'makkelijk';
+  let stickers = Array.isArray(saved.stickers) ? saved.stickers.slice(-200) : [];
+
+  let game = null, values = [], hinted = new Set(), wrong = new Set();
+  let mistakes = 0, hints = 0, solved = false, selected = -1, held = null; // held: cijfer 1..n, 0 = gum, null = niets
+  let cells = [], picks = [], correctStreak = 0, resetArmed = null, lastPlaced = -1;
+
+  function persist() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({
+        settings, stickers,
+        game: game && { code: game.code, values, hinted: [...hinted], mistakes, hints, solved },
+      }));
+    } catch (e) { /* opslaan niet mogelijk */ }
+  }
+
+  // ------------------------------------------------------------ geluid
+  let actx = null;
+  function tone(freq, dur, type, when, vol) {
+    if (!settings.sound) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      const t = actx.currentTime + (when || 0);
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = type || 'sine';
+      o.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol || 0.12, t + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(actx.destination);
+      o.start(t);
+      o.stop(t + dur + 0.03);
+    } catch (e) { /* geen geluid beschikbaar */ }
+  }
+  const sounds = {
+    pop() { tone(660, 0.12, 'triangle'); tone(990, 0.12, 'triangle', 0.06); },
+    oops() { tone(330, 0.18, 'sine'); tone(247, 0.25, 'sine', 0.13); },
+    hint() { tone(880, 0.12, 'sine'); tone(1320, 0.2, 'sine', 0.08); },
+    erase() { tone(440, 0.08, 'triangle', 0, 0.08); },
+    win() { [523, 659, 784, 1047, 1319].forEach(function (f, k) { tone(f, 0.3, 'triangle', k * 0.11, 0.14); }); },
+  };
+
+  // ------------------------------------------------------------ helpers
+  const theme = () => THEMES[settings.theme];
+  function symHtml(v) {
+    const t = theme();
+    return t.digits
+      ? '<span class="sym digit d' + v + '">' + v + '</span>'
+      : '<span class="sym">' + t.symbols[v - 1] + '</span>';
+  }
+  function symText(v) { return theme().symbols[v - 1]; }
+  function setBubble(html, kind) {
+    els.bubble.innerHTML = html;
+    els.bubble.className = 'bubble' + (kind ? ' ' + kind : '');
+  }
+
+  // ------------------------------------------------------------ instellingen
+  function buildThemeChoices() {
+    els.themes.innerHTML = '';
+    Object.keys(THEMES).forEach(function (key) {
+      const t = THEMES[key];
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'choice';
+      b.id = 'theme-' + key;
+      b.dataset.theme = key;
+      b.innerHTML = t.digits
+        ? '<span class="sample digits" aria-hidden="true"><b>1</b><b>2</b><b>3</b></span>' + t.label
+        : '<span class="sample" aria-hidden="true">' + t.symbols.slice(0, 3).join('') + '</span>' + t.label;
+      b.addEventListener('click', function () {
+        settings.theme = key;
+        syncChoices();
+        if (game) { render(); buildPalette(); }
+        persist();
+      });
+      els.themes.appendChild(b);
+    });
+  }
+  function syncChoices() {
+    document.querySelectorAll('[data-theme]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.theme === settings.theme); });
+    document.querySelectorAll('[data-size]').forEach(function (b) { b.setAttribute('aria-pressed', Number(b.dataset.size) === settings.size); });
+    document.querySelectorAll('[data-level]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.level === settings.level); });
+    els.sound.setAttribute('aria-pressed', settings.sound);
+    els.sound.querySelector('.ico').textContent = settings.sound ? '🔊' : '🔇';
+    els.mistakes.setAttribute('aria-pressed', settings.showMistakes);
+  }
+  document.querySelectorAll('[data-size]').forEach(function (b) {
+    b.addEventListener('click', function () { settings.size = Number(b.dataset.size); syncChoices(); persist(); });
+  });
+  document.querySelectorAll('[data-level]').forEach(function (b) {
+    b.addEventListener('click', function () { settings.level = b.dataset.level; syncChoices(); persist(); });
+  });
+
+  // ------------------------------------------------------------ nieuw spel
+  function startGame(size, level, seed, restore) {
+    game = S.generate(size, level, seed);
+    values = game.puzzle.slice();
+    hinted = new Set(); wrong = new Set();
+    mistakes = 0; hints = 0; solved = false; selected = -1; held = null; correctStreak = 0; lastPlaced = -1;
+    if (restore && restore.code === game.code && Array.isArray(restore.values) && restore.values.length === values.length) {
+      values = restore.values.map(function (v, i) { return game.puzzle[i] || (v | 0); });
+      hinted = new Set(restore.hinted || []);
+      mistakes = restore.mistakes | 0; hints = restore.hints | 0; solved = !!restore.solved;
+      if (settings.showMistakes) values.forEach(function (v, i) { if (v && v !== game.solution[i]) wrong.add(i); });
+    }
+    disarmReset();
+    buildBoard();
+    buildPalette();
+    render();
+    if (solved) setBubble('Deze puzzel heb je al opgelost. Tik op <b>Nieuwe puzzel!</b> voor een nieuwe.', 'yay');
+    else if (values.some(function (v, i) { return v && !game.puzzle[i]; })) setBubble('Welkom terug! Ga maar verder waar je was.');
+    else setBubble('Kies een plaatje hieronder en tik op een leeg vakje.');
+    persist();
+  }
+
+  function buildBoard() {
+    const size = game.size, boxRows = game.boxRows, boxCols = game.boxCols;
+    const perRow = size / boxCols;
+    els.board.style.setProperty('--n', size);
+    els.board.style.gridTemplateColumns = 'repeat(' + perRow + ', 1fr)';
+    els.board.innerHTML = '';
+    cells = new Array(size * size);
+    for (let b = 0; b < size; b++) {
+      const br = Math.floor(b / perRow), bc = b % perRow;
+      const box = document.createElement('div');
+      box.className = 'box ' + ((br + bc) % 2 ? 'tint-b' : 'tint-a');
+      box.style.gridTemplateColumns = 'repeat(' + boxCols + ', 1fr)';
+      for (let r = 0; r < boxRows; r++) {
+        for (let c = 0; c < boxCols; c++) {
+          const i = (br * boxRows + r) * size + (bc * boxCols + c);
+          const cell = document.createElement('button');
+          cell.type = 'button';
+          cell.className = 'cell';
+          cell.setAttribute('role', 'gridcell');
+          cell.dataset.index = i;
+          cell.addEventListener('click', function () { tapCell(i); });
+          box.appendChild(cell);
+          cells[i] = cell;
+        }
+      }
+      els.board.appendChild(box);
+    }
+  }
+
+  function buildPalette() {
+    const size = game.size;
+    els.palette.style.setProperty('--cols', size === 4 ? 5 : 7);
+    els.palette.innerHTML = '';
+    picks = [];
+    for (let v = 1; v <= size; v++) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'pick';
+      b.setAttribute('aria-label', theme().names[v - 1]);
+      b.innerHTML = symHtml(v) + '<span class="left"></span>';
+      b.addEventListener('click', function () { tapPick(v); });
+      els.palette.appendChild(b);
+      picks.push(b);
+    }
+    const g = document.createElement('button');
+    g.type = 'button';
+    g.className = 'pick eraser';
+    g.setAttribute('aria-label', 'Gum: plaatje weghalen');
+    g.innerHTML = '<span class="sym" aria-hidden="true">🧽</span>';
+    g.addEventListener('click', function () { tapPick(0); });
+    els.palette.appendChild(g);
+    picks.push(g);
+  }
+
+  // ------------------------------------------------------------ tekenen
+  function render() {
+    const size = game.size;
+    const counts = new Array(size + 1).fill(0);
+    for (let i = 0; i < cells.length; i++) {
+      const v = values[i];
+      if (v && !wrong.has(i)) counts[v]++;
+      const cell = cells[i];
+      const isGiven = !!game.puzzle[i];
+      cell.classList.toggle('given', isGiven);
+      cell.classList.toggle('empty', !v);
+      cell.classList.toggle('selected', i === selected && !solved);
+      cell.classList.toggle('same', !!held && v === held);
+      cell.classList.toggle('wrong', wrong.has(i));
+      cell.classList.toggle('hinted', hinted.has(i));
+      cell.classList.toggle('placed', i === lastPlaced);
+      const html = v ? symHtml(v) : '';
+      if (cell._html !== html || i === lastPlaced) { cell.innerHTML = html; cell._html = html; }
+      const r = Math.floor(i / size) + 1, c = (i % size) + 1;
+      cell.setAttribute('aria-label', 'Rij ' + r + ', kolom ' + c + ': ' + (v ? theme().names[v - 1] : 'leeg'));
+    }
+    lastPlaced = -1;
+    picks.forEach(function (b, k) {
+      const v = k + 1;
+      const isEraser = k === size;
+      b.setAttribute('aria-pressed', held === (isEraser ? 0 : v));
+      if (isEraser) return;
+      const left = size - counts[v];
+      const badge = b.querySelector('.left');
+      badge.textContent = left > 0 ? left : '✓';
+      badge.classList.toggle('done', left <= 0);
+    });
+    els.reset.disabled = solved;
+    $('hint').disabled = solved;
+  }
+
+  // ------------------------------------------------------------ spelen
+  function editable(i) { return i >= 0 && !game.puzzle[i] && !hinted.has(i) && !solved; }
+
+  function tapCell(i) {
+    if (solved) return;
+    selected = i;
+    if (held !== null && editable(i)) {
+      if (held === 0) erase(i);
+      else place(i, held);
+      return;
+    }
+    if (game.puzzle[i] || hinted.has(i)) {
+      setBubble('Dit plaatje stond er al. Dat mag je niet veranderen.');
+    } else if (held === null) {
+      setBubble('Welk plaatje hoort hier? Tik er een aan hieronder.');
+    }
+    render();
+  }
+
+  // Twee manieren, allebei makkelijk:
+  //  - eerst een leeg vakje, dan een plaatje: het plaatje komt in dat vakje;
+  //  - eerst een plaatje: je "stempelt" het op elk vakje dat je daarna aantikt.
+  function tapPick(v) {
+    if (solved) return;
+    const target = selected;
+    const fillable = editable(target) && (v === 0 ? !!values[target] : !values[target] || wrong.has(target));
+    if (fillable && held === null) {
+      selected = -1;
+      if (v === 0) erase(target);
+      else place(target, v);
+      return;
+    }
+    held = held === v ? null : v;
+    if (held === 0) setBubble('Tik op een plaatje in de puzzel om het weg te gummen.');
+    else if (held) setBubble('Tik nu op een leeg vakje voor de ' + '<span class="sym">' + symText(held) + '</span>' + '.');
+    render();
+  }
+
+  function conflictWith(i, v) {
+    const geo = S.geometry(game.size);
+    for (const p of geo.peers[i]) {
+      if (values[p] !== v) continue;
+      const where = geo.rowOf[p] === geo.rowOf[i] ? 'deze rij' : geo.colOf[p] === geo.colOf[i] ? 'deze kolom' : 'dit vak';
+      return { cell: p, where: where };
+    }
+    return null;
+  }
+
+  function place(i, v) {
+    if (values[i] === v) { render(); return; }
+    const conflict = conflictWith(i, v);
+    values[i] = v;
+    lastPlaced = i;
+    if (v !== game.solution[i]) {
+      mistakes++;
+      correctStreak = 0;
+      if (settings.showMistakes) {
+        wrong.add(i);
+        sounds.oops();
+        const s = '<span class="sym">' + symText(v) + '</span>';
+        if (conflict) {
+          setBubble('Oei! Er staat al een ' + s + ' in ' + conflict.where + '.', 'oops');
+          flash(conflict.cell);
+        } else {
+          setBubble('Hmm, de ' + s + ' hoort hier niet. Probeer een ander plaatje!', 'oops');
+        }
+      } else {
+        sounds.pop();
+      }
+    } else {
+      wrong.delete(i);
+      sounds.pop();
+      correctStreak++;
+      if (correctStreak % 3 === 0) setBubble(CHEERS[Math.floor(Math.random() * CHEERS.length)], 'yay');
+      else if (els.bubble.classList.contains('oops')) setBubble('Ja, zo past het!', 'yay');
+    }
+    afterChange();
+  }
+
+  function erase(i) {
+    if (!values[i]) { render(); return; }
+    values[i] = 0;
+    wrong.delete(i);
+    sounds.erase();
+    setBubble('Weg is ie!');
+    afterChange();
+  }
+
+  function flash(i) {
+    const c = cells[i];
+    c.classList.remove('flash');
+    void c.offsetWidth;
+    c.classList.add('flash');
+    setTimeout(function () { c.classList.remove('flash'); }, 1900);
+  }
+
+  function hint() {
+    if (solved) return;
+    const need = function (k) { return !game.puzzle[k] && !hinted.has(k) && values[k] !== game.solution[k]; };
+    let i = selected;
+    if (!(i >= 0 && need(i))) {
+      const open = [];
+      for (let k = 0; k < values.length; k++) if (need(k)) open.push(k);
+      if (!open.length) return;
+      // Liefst een vakje waar maar één plaatje kan: dat is het makkelijkst te begrijpen.
+      const geo = S.geometry(game.size);
+      const easy = open.filter(function (k) {
+        let opts = 0;
+        for (let v = 1; v <= game.size; v++) if (!geo.peers[k].some(function (p) { return values[p] === v; })) opts++;
+        return opts === 1;
+      });
+      const pool = easy.length ? easy : open;
+      i = pool[Math.floor(Math.random() * pool.length)];
+    }
+    const v = game.solution[i];
+    values[i] = v;
+    hinted.add(i);
+    wrong.delete(i);
+    hints++;
+    selected = i;
+    lastPlaced = i;
+    sounds.hint();
+    setBubble('Kijk, hier hoort een <span class="sym">' + symText(v) + '</span>!', 'yay');
+    afterChange();
+  }
+
+  function afterChange() {
+    const full = values.every(Boolean);
+    if (full) {
+      const bad = [];
+      values.forEach(function (v, i) { if (v !== game.solution[i]) bad.push(i); });
+      if (!bad.length) { win(); return; }
+      bad.forEach(function (i) { wrong.add(i); });
+      setBubble(bad.length === 1 ? 'Bijna! Eén plaatje staat nog niet goed. Zie je het rode vakje?' : 'Bijna! ' + bad.length + ' plaatjes staan nog niet goed. Kijk naar de rode vakjes.', 'oops');
+    }
+    render();
+    persist();
+  }
+
+  function win() {
+    solved = true;
+    selected = -1;
+    held = null;
+    const slips = mistakes + hints;
+    const stars = slips === 0 ? 3 : slips <= 3 ? 2 : 1;
+    const sticker = STICKERS[Math.floor(Math.random() * STICKERS.length)];
+    stickers.push(sticker);
+    render();
+    renderStickers(true);
+    persist();
+    sounds.win();
+    setBubble('Hoera, opgelost! Je verdiende een sticker.', 'yay');
+    els.partyStars.innerHTML = [1, 2, 3].map(function (k) { return '<span class="' + (k <= stars ? '' : 'off') + '">★</span>'; }).join('');
+    els.partyStars.setAttribute('aria-label', stars + ' van de 3 sterren');
+    els.partySticker.textContent = sticker;
+    els.party.hidden = false;
+    $('again').focus();
+    confetti();
+  }
+
+  function renderStickers(fresh) {
+    els.stickerGrid.innerHTML = stickers.map(function (s, k) {
+      return '<span class="sticker' + (fresh && k === stickers.length - 1 ? ' new' : '') + '">' + s + '</span>';
+    }).join('');
+    els.stickerEmpty.hidden = stickers.length > 0;
+    $('sticker-title').textContent = stickers.length ? 'Mijn stickerboek (' + stickers.length + ')' : 'Mijn stickerboek';
+  }
+
+  function disarmReset() {
+    clearTimeout(resetArmed);
+    resetArmed = null;
+    els.reset.classList.remove('armed');
+    els.reset.innerHTML = '<span class="ico" aria-hidden="true">🔄</span> Opnieuw';
+  }
+  function reset() {
+    if (!resetArmed) {
+      els.reset.classList.add('armed');
+      els.reset.textContent = 'Alles wissen? Tik nog eens';
+      resetArmed = setTimeout(disarmReset, 3000);
+      return;
+    }
+    disarmReset();
+    values = game.puzzle.slice();
+    hinted = new Set(); wrong = new Set();
+    mistakes = 0; hints = 0; selected = -1; correctStreak = 0;
+    setBubble('Alles is weer leeg. Probeer het nog een keer!');
+    render();
+    persist();
+  }
+
+  // ------------------------------------------------------------ confetti
+  function confetti() {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const cv = els.confetti;
+    const ctx = cv.getContext('2d');
+    if (!ctx) return;
+    cv.hidden = false;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = innerWidth * dpr;
+    cv.height = innerHeight * dpr;
+    ctx.scale(dpr, dpr);
+    const colors = ['#ff4f9a', '#ffc22e', '#22b48f', '#3fa9f5', '#8f6cff', '#e2405a'];
+    const parts = Array.from({ length: 160 }, function () {
+      return {
+        x: innerWidth / 2 + (Math.random() - 0.5) * 80,
+        y: innerHeight * 0.35,
+        vx: (Math.random() - 0.5) * 14,
+        vy: -Math.random() * 13 - 4,
+        r: Math.random() * 6 + 4,
+        rot: Math.random() * 6,
+        vr: (Math.random() - 0.5) * 0.3,
+        c: colors[Math.floor(Math.random() * colors.length)],
+        round: Math.random() < 0.35,
+      };
+    });
+    const start = performance.now();
+    (function frame(now) {
+      const t = now - start;
+      ctx.clearRect(0, 0, innerWidth, innerHeight);
+      parts.forEach(function (p) {
+        p.vy += 0.32; p.vx *= 0.99; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, 1 - t / 3200);
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.c;
+        if (p.round) { ctx.beginPath(); ctx.arc(0, 0, p.r / 2, 0, Math.PI * 2); ctx.fill(); }
+        else ctx.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2);
+        ctx.restore();
+      });
+      if (t < 3200) requestAnimationFrame(frame);
+      else { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height); cv.hidden = true; }
+    })(start);
+  }
+
+  // ------------------------------------------------------------ knoppen
+  function newPuzzle() {
+    els.party.hidden = true;
+    startGame(settings.size, settings.level, Math.floor(Math.random() * 1e6));
+  }
+  $('new-game').addEventListener('click', newPuzzle);
+  $('again').addEventListener('click', newPuzzle);
+  $('close-party').addEventListener('click', function () { els.party.hidden = true; });
+  $('hint').addEventListener('click', hint);
+  els.reset.addEventListener('click', reset);
+  els.sound.addEventListener('click', function () { settings.sound = !settings.sound; syncChoices(); persist(); if (settings.sound) sounds.pop(); });
+  els.mistakes.addEventListener('click', function () {
+    settings.showMistakes = !settings.showMistakes;
+    if (!settings.showMistakes) wrong = new Set();
+    else values.forEach(function (v, i) { if (v && v !== game.solution[i]) wrong.add(i); });
+    setBubble(settings.showMistakes ? 'Ik laat het meteen zien als iets niet past.' : 'Ik zeg pas iets als de puzzel vol is. Spannend!');
+    syncChoices(); render(); persist();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (!game || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (!els.party.hidden) { if (e.key === 'Escape') els.party.hidden = true; return; }
+    const size = game.size;
+    const d = Number(e.key);
+    if (Number.isInteger(d) && d >= 1 && d <= size) {
+      e.preventDefault();
+      if (editable(selected)) { held = d; place(selected, d); }
+      return;
+    }
+    if (e.key === 'Backspace' || e.key === 'Delete') { e.preventDefault(); if (editable(selected)) erase(selected); return; }
+    const moves = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
+    if (moves[e.key]) {
+      e.preventDefault();
+      const i = selected < 0 ? 0 : selected;
+      const r = (Math.floor(i / size) + moves[e.key][0] + size) % size;
+      const c = ((i % size) + moves[e.key][1] + size) % size;
+      selected = r * size + c;
+      cells[selected].focus({ preventScroll: true });
+      render();
+    }
+  });
+
+  // ------------------------------------------------------------ start
+  function boot(data) {
+    const snap = data && data.game ? data : null;
+    if (snap && Array.isArray(snap.stickers)) stickers = snap.stickers;
+    if (snap && snap.settings) Object.assign(settings, snap.settings);
+    buildThemeChoices();
+    syncChoices();
+    renderStickers(false);
+    const restore = (snap && snap.game) || saved.game;
+    const parsed = restore && S.parseCode(restore.code);
+    if (parsed && (parsed.size === 4 || parsed.size === 6)) startGame(parsed.size, parsed.level, parsed.seed, restore);
+    else startGame(settings.size, settings.level, Math.floor(Math.random() * 1e6));
+  }
+  const hot = window.claude && window.claude.hot;
+  if (hot && hot.snapshot) hot.snapshot(function () {
+    return { settings: settings, stickers: stickers, game: game && { code: game.code, values: values, hinted: [...hinted], mistakes: mistakes, hints: hints, solved: solved } };
+  });
+  if (hot && hot.ready) hot.ready(boot); else boot(hot && hot.data);
+})();
+</script>
+</body>
+</html>

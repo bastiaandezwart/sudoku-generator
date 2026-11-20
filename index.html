@@ -1,0 +1,953 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sudokumaker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=Kalam:wght@400;700&display=swap">
+<style>
+/* Layout: puzzelrooster als hoofdzaak links, bediening als smalle kolom rechts; op de telefoon gestapeld (instellingen, rooster, cijfers). */
+:root {
+  --paper: #f4f6f9;
+  --surface: #ffffff;
+  --ink: #18202e;
+  --muted: #5a6475;
+  --line: #c8cfdb;
+  --line-strong: #18202e;
+  --pen: #2346c4;
+  --hint: #0d7470;
+  --tint: #e9eef7;
+  --same: #d3defb;
+  --select: #ffe27a;
+  --error: #c0262d;
+  --error-bg: #fbe3e3;
+  --ok: #1d7448;
+  --ok-bg: #e2f3e9;
+  --control: #e6eaf1;
+  --control-hover: #d9dfea;
+
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-hand: "Kalam", "Comic Neue", "Segoe Print", "Bradley Hand", cursive;
+
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #10141c;
+    --surface: #181e29;
+    --ink: #e5e9f0;
+    --muted: #98a2b3;
+    --line: #333c4d;
+    --line-strong: #c3cbd8;
+    --pen: #8eaeff;
+    --hint: #5fcac3;
+    --tint: #1f2737;
+    --same: #2a3758;
+    --select: #574914;
+    --error: #ff8080;
+    --error-bg: #3b1d22;
+    --ok: #63d49c;
+    --ok-bg: #173226;
+    --control: #232b3a;
+    --control-hover: #2c3648;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #10141c;
+  --surface: #181e29;
+  --ink: #e5e9f0;
+  --muted: #98a2b3;
+  --line: #333c4d;
+  --line-strong: #c3cbd8;
+  --pen: #8eaeff;
+  --hint: #5fcac3;
+  --tint: #1f2737;
+  --same: #2a3758;
+  --select: #574914;
+  --error: #ff8080;
+  --error-bg: #3b1d22;
+  --ok: #63d49c;
+  --ok-bg: #173226;
+  --control: #232b3a;
+  --control-hover: #2c3648;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+}
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--pen); outline-offset: 2px; }
+
+.wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding-block: 28px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid;
+  gap: 24px;
+}
+
+header { display: grid; gap: 4px; }
+h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2rem, 1.4rem + 2.4vw, 2.9rem);
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+h1 .grid-mark {
+  display: inline-grid;
+  grid-template-columns: repeat(3, 0.24em);
+  gap: 0.04em;
+  margin-right: 0.18em;
+  vertical-align: 0.06em;
+}
+h1 .grid-mark i { width: 0.24em; height: 0.24em; background: var(--ink); border-radius: 2px; }
+h1 .grid-mark i.on { background: var(--pen); }
+.tagline { margin: 0; color: var(--muted); max-width: 62ch; }
+
+.layout {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-areas: "board setup" "board play";
+  align-items: start;
+}
+.area-board { grid-area: board; min-width: 0; display: grid; gap: 10px; }
+.area-setup { grid-area: setup; }
+.area-play { grid-area: play; }
+@media (max-width: 820px) {
+  .layout { grid-template-columns: minmax(0, 1fr); grid-template-areas: "setup" "board" "play"; }
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+}
+.label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+legend { padding: 0; }
+
+.segmented { display: grid; gap: 4px; background: var(--control); padding: 4px; border-radius: 8px; }
+.segmented.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.segmented.cols-4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 380px) { .segmented.cols-4 { grid-template-columns: repeat(2, 1fr); } }
+.segmented input { position: absolute; opacity: 0; pointer-events: none; }
+.segmented label {
+  text-align: center;
+  padding: 7px 4px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.segmented label:hover { background: var(--control-hover); }
+.segmented input:checked + label { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }
+.segmented input:focus-visible + label { outline: 3px solid var(--pen); outline-offset: 1px; }
+.size-label { font-family: var(--font-display); font-variant-numeric: tabular-nums; }
+.level-note { margin: 6px 0 0; font-size: 0.85rem; color: var(--muted); min-height: 2.6em; }
+
+.btn {
+  border: 1px solid var(--line);
+  background: var(--control);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.12s;
+}
+.btn:hover { background: var(--control-hover); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 600; padding: 11px 14px; }
+.btn.primary:hover { opacity: 0.9; }
+.btn[aria-pressed="true"] { background: var(--pen); border-color: var(--pen); color: var(--surface); }
+.btn.danger-armed { background: var(--error-bg); border-color: var(--error); color: var(--error); }
+
+/* --- statusregel boven het rooster --- */
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.status strong { color: var(--ink); font-weight: 600; }
+.timer { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* --- het rooster --- */
+.board-shell { width: 100%; max-width: 580px; justify-self: center; container-type: inline-size; position: relative; }
+.board {
+  --n: 9;
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  aspect-ratio: 1;
+  max-width: 100%;
+  border: 3px solid var(--line-strong);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface);
+  touch-action: manipulation;
+}
+.cell {
+  position: relative;
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: calc(100cqw / var(--n) * 0.56);
+  line-height: 1;
+  min-width: 0;
+  min-height: 0;
+  font-variant-numeric: tabular-nums;
+}
+.cell.box-r { border-right: 2px solid var(--line-strong); }
+.cell.box-b { border-bottom: 2px solid var(--line-strong); }
+.cell.last-c { border-right: 0; }
+.cell.last-r { border-bottom: 0; }
+.cell:focus-visible { outline: 3px solid var(--pen); outline-offset: -3px; z-index: 1; }
+.cell.peer { background: var(--tint); }
+.cell.same { background: var(--same); }
+.cell.selected { background: var(--select); }
+.cell.wrong { background: var(--error-bg); }
+
+.digit { display: block; }
+.digit.given { font-family: var(--font-display); font-weight: 700; color: var(--ink); }
+.digit.pen { font-family: var(--font-hand); font-weight: 700; color: var(--pen); font-size: 1.08em; transform: translateY(0.06em); }
+.digit.hinted { font-family: var(--font-hand); font-weight: 700; color: var(--hint); font-size: 1.08em; transform: translateY(0.06em); }
+.cell.conflict .digit, .cell.wrong .digit { color: var(--error); }
+.cell.conflict .digit.given { text-decoration: underline 2px; text-underline-offset: 0.12em; }
+
+.notes {
+  position: absolute;
+  inset: 6%;
+  display: grid;
+  grid-template-columns: repeat(var(--note-cols, 3), 1fr);
+  grid-template-rows: repeat(var(--note-rows, 3), 1fr);
+  font-size: calc(100cqw / var(--n) * 0.22);
+  color: var(--muted);
+  font-weight: 500;
+}
+.notes span { display: grid; place-items: center; }
+.notes span.hit { color: var(--pen); font-weight: 700; }
+
+.banner {
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-weight: 500;
+  background: var(--ok-bg);
+  color: var(--ok);
+  border: 1px solid currentColor;
+}
+.banner.info { background: var(--tint); color: var(--ink); border-color: var(--line); }
+.banner.warn { background: var(--error-bg); color: var(--error); }
+
+.busy-veil {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+/* --- cijferpaneel en gereedschap --- */
+.numpad { display: grid; gap: 6px; grid-template-columns: repeat(var(--pad-cols, 5), 1fr); }
+.numpad button {
+  position: relative;
+  aspect-ratio: 1.15;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 8px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.45rem;
+  color: var(--ink);
+}
+.numpad button:hover { background: var(--tint); }
+.numpad button .left {
+  position: absolute;
+  right: 5px;
+  bottom: 3px;
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+.numpad button.done { opacity: 0.35; }
+.notes-mode .numpad button { color: var(--pen); font-family: var(--font-hand); }
+
+.tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.tools .btn { padding: 9px 6px; font-size: 0.86rem; }
+.check-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.keys { margin: 0; font-size: 0.8rem; color: var(--muted); }
+kbd {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0 4px;
+  background: var(--surface);
+}
+
+details.share summary { cursor: pointer; font-weight: 500; font-size: 0.9rem; }
+.share-body { display: grid; gap: 8px; margin-top: 10px; }
+.code-row { display: flex; gap: 6px; }
+.code-row input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--paper);
+  font-variant-numeric: tabular-nums;
+}
+.small { margin: 0; font-size: 0.8rem; color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+@media print {
+  body { background: #fff; color: #000; }
+  header .tagline, .area-setup, .area-play, .status .timer, .banner { display: none !important; }
+  .layout { display: block; }
+  .board-shell { max-width: 16cm; margin: 1cm auto; }
+  .cell { background: #fff !important; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span class="grid-mark" aria-hidden="true"><i></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i class="on"></i><i></i><i></i></span>Sudokumaker</h1>
+    <p class="tagline">Maak puzzels van 4×4, 6×6 of 9×9 in vier niveaus. Elke puzzel heeft precies één oplossing en is met een code opnieuw op te roepen.</p>
+  </header>
+
+  <div class="layout" id="layout">
+    <section class="area-setup panel" aria-label="Nieuwe puzzel">
+      <fieldset>
+        <legend class="label">Grootte</legend>
+        <div class="segmented cols-3" id="size-group">
+          <input type="radio" name="size" id="size-4" value="4"><label for="size-4" class="size-label">4×4</label>
+          <input type="radio" name="size" id="size-6" value="6"><label for="size-6" class="size-label">6×6</label>
+          <input type="radio" name="size" id="size-9" value="9" checked><label for="size-9" class="size-label">9×9</label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend class="label">Niveau</legend>
+        <div class="segmented cols-4" id="level-group">
+          <input type="radio" name="level" id="level-makkelijk" value="makkelijk"><label for="level-makkelijk">Makkelijk</label>
+          <input type="radio" name="level" id="level-gemiddeld" value="gemiddeld" checked><label for="level-gemiddeld">Gemiddeld</label>
+          <input type="radio" name="level" id="level-moeilijk" value="moeilijk"><label for="level-moeilijk">Moeilijk</label>
+          <input type="radio" name="level" id="level-expert" value="expert"><label for="level-expert">Expert</label>
+        </div>
+        <p class="level-note" id="level-note"></p>
+      </fieldset>
+      <button class="btn primary" id="new-game" type="button">Nieuwe puzzel maken</button>
+    </section>
+
+    <section class="area-board" aria-label="Puzzel">
+      <div class="status">
+        <span id="status-text">Puzzel wordt gemaakt…</span>
+        <span class="timer" id="timer" aria-label="Verstreken tijd">00:00</span>
+      </div>
+      <div class="board-shell">
+        <div class="board" id="board" role="grid" aria-label="Sudoku-rooster"></div>
+        <div class="busy-veil" id="busy" hidden>Puzzel maken…</div>
+      </div>
+      <div id="message" role="status" aria-live="polite"></div>
+    </section>
+
+    <section class="area-play panel" aria-label="Invullen" id="play">
+      <div>
+        <p class="label">Cijfers</p>
+        <div class="numpad" id="numpad"></div>
+      </div>
+      <div class="tools">
+        <button class="btn" id="notes-toggle" type="button" aria-pressed="false" title="Potloodstreepjes (N)">Notities</button>
+        <button class="btn" id="erase" type="button" title="Wissen (Backspace)">Wissen</button>
+        <button class="btn" id="undo" type="button" title="Ongedaan maken (Ctrl+Z)">Terug</button>
+      </div>
+      <div class="check-row">
+        <button class="btn" id="hint" type="button">Hint</button>
+        <button class="btn" id="check" type="button">Controleren</button>
+      </div>
+      <button class="btn" id="reveal" type="button">Oplossing tonen</button>
+      <p class="keys">Toetsen: <kbd>1</kbd>–<kbd id="max-key">9</kbd> invullen, <kbd>N</kbd> notities, <kbd>⌫</kbd> wissen, pijltjes om te bewegen.</p>
+      <details class="share">
+        <summary>Puzzelcode</summary>
+        <div class="share-body">
+          <p class="small">Met dezelfde code krijgt iedereen precies dezelfde puzzel.</p>
+          <div class="code-row">
+            <input id="code-current" type="text" readonly aria-label="Code van deze puzzel">
+            <button class="btn" id="copy-code" type="button">Kopiëren</button>
+          </div>
+          <form class="code-row" id="load-form">
+            <input id="code-input" type="text" placeholder="bijv. 9-expert-482113" aria-label="Puzzelcode invoeren" autocomplete="off" spellcheck="false">
+            <button class="btn" type="submit">Laden</button>
+          </form>
+        </div>
+      </details>
+    </section>
+  </div>
+</div>
+
+<script src="sudoku.js"></script>
+<script>
+(function () {
+  'use strict';
+  const S = window.Sudoku;
+  const STORE_KEY = 'sudokumaker:v1';
+
+  const LEVEL_NOTES = {
+    makkelijk: 'Veel cijfers gegeven. Elk vakje volgt direct uit de rij, kolom of het blok.',
+    gemiddeld: 'Minder hulp, maar nog steeds zonder gokken op te lossen met eenvoudige logica.',
+    moeilijk: 'Je moet kandidaten bijhouden en wegstrepen om verder te komen.',
+    expert: 'Zo min mogelijk cijfers. Vraagt om geavanceerde technieken en geduld.',
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const els = {
+    board: $('board'), numpad: $('numpad'), status: $('status-text'), timer: $('timer'),
+    message: $('message'), busy: $('busy'), levelNote: $('level-note'), play: $('play'),
+    notesToggle: $('notes-toggle'), reveal: $('reveal'), codeCurrent: $('code-current'),
+    codeInput: $('code-input'), maxKey: $('max-key'), newGame: $('new-game'),
+  };
+
+  let state = null;     // huidige partij
+  let cells = [];       // DOM-knoppen van het rooster
+  let padButtons = [];
+  let tickHandle = null;
+  let revealArmed = null;
+
+  // ---------------------------------------------------------- opslag
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { return null; }
+  }
+  function save() {
+    if (!state) return;
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(serialize())); } catch (e) { /* niet beschikbaar */ }
+  }
+  function serialize() {
+    return {
+      code: state.game.code,
+      values: state.values,
+      notes: state.notes,
+      hinted: [...state.hinted],
+      elapsed: currentElapsed(),
+      revealed: state.revealed,
+      solved: state.solved,
+    };
+  }
+
+  // ---------------------------------------------------------- partij
+
+  function selectedSettings() {
+    return {
+      size: Number(document.querySelector('input[name="size"]:checked').value),
+      level: document.querySelector('input[name="level"]:checked').value,
+    };
+  }
+  function setSettings(size, level) {
+    $('size-' + size).checked = true;
+    $('level-' + level).checked = true;
+    updateLevelNote();
+  }
+  function updateLevelNote() {
+    const { size, level } = selectedSettings();
+    const clues = S.CLUES[size][level];
+    els.levelNote.textContent = LEVEL_NOTES[level] + ' Ongeveer ' + clues + ' van de ' + size * size + ' vakjes gegeven.';
+  }
+
+  function startGame(size, level, seed, saved) {
+    els.busy.hidden = false;
+    els.newGame.disabled = true;
+    // Even wachten zodat de "bezig"-melding getekend wordt.
+    setTimeout(function () {
+      const game = S.generate(size, level, seed);
+      state = {
+        game,
+        values: game.puzzle.slice(),
+        notes: new Array(game.puzzle.length).fill(0),
+        hinted: new Set(),
+        wrong: new Set(),
+        history: [],
+        selected: -1,
+        notesMode: false,
+        elapsed: 0,
+        startedAt: Date.now(),
+        revealed: false,
+        solved: false,
+      };
+      if (saved && saved.code === game.code && Array.isArray(saved.values) && saved.values.length === game.puzzle.length) {
+        state.values = saved.values.map((v, i) => (game.puzzle[i] ? game.puzzle[i] : v | 0));
+        if (Array.isArray(saved.notes) && saved.notes.length === game.puzzle.length) state.notes = saved.notes.map((m) => m | 0);
+        state.hinted = new Set(saved.hinted || []);
+        state.elapsed = saved.elapsed | 0;
+        state.revealed = !!saved.revealed;
+        state.solved = !!saved.solved;
+      }
+      setSettings(size, level);
+      setHash(game.code);
+      buildBoard();
+      buildPad();
+      setNotesMode(false);
+      disarmReveal();
+      els.codeCurrent.value = game.code;
+      els.busy.hidden = true;
+      els.newGame.disabled = false;
+      state.startedAt = Date.now();
+      if (state.solved) showMessage('Deze puzzel heb je al opgelost.', 'ok');
+      else if (state.revealed) showMessage('De oplossing is getoond. Maak een nieuwe puzzel om verder te spelen.', 'info');
+      else showMessage('');
+      render();
+      startTimer();
+      save();
+    }, 30);
+  }
+
+  function currentElapsed() {
+    if (!state) return 0;
+    if (state.solved || state.revealed || document.hidden) return state.elapsed;
+    return state.elapsed + (Date.now() - state.startedAt);
+  }
+  function startTimer() {
+    clearInterval(tickHandle);
+    tickHandle = setInterval(updateTimer, 500);
+    updateTimer();
+  }
+  function stopClock() {
+    state.elapsed = currentElapsed();
+    state.startedAt = Date.now();
+  }
+  function updateTimer() {
+    const s = Math.floor(currentElapsed() / 1000);
+    const h = Math.floor(s / 3600);
+    const mm = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+    const ss = String(s % 60).padStart(2, '0');
+    els.timer.textContent = (h ? h + ':' : '') + mm + ':' + ss;
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (!state || state.solved || state.revealed) return;
+    if (document.hidden) { state.elapsed += Date.now() - state.startedAt; }
+    else { state.startedAt = Date.now(); }
+    save();
+  });
+
+  // ---------------------------------------------------------- opbouw DOM
+
+  function buildBoard() {
+    const { size, boxRows, boxCols } = state.game;
+    els.board.style.setProperty('--n', size);
+    els.board.style.setProperty('--note-cols', boxCols);
+    els.board.style.setProperty('--note-rows', boxRows);
+    els.board.innerHTML = '';
+    cells = [];
+    for (let i = 0; i < size * size; i++) {
+      const r = Math.floor(i / size), c = i % size;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'cell';
+      if (c % boxCols === boxCols - 1) b.classList.add('box-r');
+      if (r % boxRows === boxRows - 1) b.classList.add('box-b');
+      if (c === size - 1) b.classList.add('last-c');
+      if (r === size - 1) b.classList.add('last-r');
+      b.setAttribute('role', 'gridcell');
+      b.tabIndex = i === 0 ? 0 : -1;
+      b.dataset.index = i;
+      b.addEventListener('click', function () { select(i); });
+      els.board.appendChild(b);
+      cells.push(b);
+    }
+    els.maxKey.textContent = size;
+  }
+
+  function buildPad() {
+    const { size } = state.game;
+    els.numpad.style.setProperty('--pad-cols', size === 9 ? 5 : size === 6 ? 3 : 4);
+    els.numpad.innerHTML = '';
+    padButtons = [];
+    for (let v = 1; v <= size; v++) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.innerHTML = v + '<span class="left"></span>';
+      b.setAttribute('aria-label', 'Cijfer ' + v);
+      b.addEventListener('click', function () { enter(v); });
+      els.numpad.appendChild(b);
+      padButtons.push(b);
+    }
+  }
+
+  // ---------------------------------------------------------- tekenen
+
+  function conflictsOf(values, geo) {
+    const bad = new Set();
+    for (let i = 0; i < values.length; i++) {
+      const v = values[i];
+      if (!v) continue;
+      for (const p of geo.peers[i]) if (values[p] === v) { bad.add(i); break; }
+    }
+    return bad;
+  }
+
+  function render() {
+    const { size, puzzle, boxRows, boxCols, level, clues } = state.game;
+    const geo = S.geometry(size);
+    const sel = state.selected;
+    const selVal = sel >= 0 ? state.values[sel] : 0;
+    const conflicts = conflictsOf(state.values, geo);
+    const counts = new Array(size + 1).fill(0);
+
+    for (let i = 0; i < cells.length; i++) {
+      const cell = cells[i];
+      const v = state.values[i];
+      if (v) counts[v]++;
+      const isGiven = !!puzzle[i];
+      const isPeer = sel >= 0 && i !== sel &&
+        (geo.rowOf[i] === geo.rowOf[sel] || geo.colOf[i] === geo.colOf[sel] || geo.boxOf[i] === geo.boxOf[sel]);
+      cell.classList.toggle('selected', i === sel);
+      cell.classList.toggle('peer', isPeer);
+      cell.classList.toggle('same', i !== sel && !!selVal && v === selVal);
+      cell.classList.toggle('conflict', conflicts.has(i));
+      cell.classList.toggle('wrong', state.wrong.has(i));
+
+      let html;
+      if (v) {
+        const kind = isGiven ? 'given' : state.hinted.has(i) ? 'hinted' : 'pen';
+        html = '<span class="digit ' + kind + '">' + v + '</span>';
+      } else if (state.notes[i]) {
+        html = '<span class="notes" aria-hidden="true">';
+        for (let d = 1; d <= size; d++) {
+          const on = state.notes[i] & (1 << d);
+          html += '<span class="' + (on && d === selVal ? 'hit' : '') + '">' + (on ? d : '') + '</span>';
+        }
+        html += '</span>';
+      } else {
+        html = '';
+      }
+      if (cell._html !== html) { cell.innerHTML = html; cell._html = html; }
+
+      const r = geo.rowOf[i] + 1, c = geo.colOf[i] + 1;
+      let label = 'Rij ' + r + ', kolom ' + c + ': ';
+      if (v) label += v + (isGiven ? ' (gegeven)' : '');
+      else if (state.notes[i]) label += 'leeg, notities ' + digitsOf(state.notes[i]).join(' ');
+      else label += 'leeg';
+      cell.setAttribute('aria-label', label);
+    }
+
+    padButtons.forEach(function (b, k) {
+      const v = k + 1;
+      const left = size - counts[v];
+      b.classList.toggle('done', left <= 0);
+      b.querySelector('.left').textContent = left > 0 ? left : '';
+    });
+
+    const levelLabel = S.LEVEL_LABELS[level];
+    els.status.innerHTML = '<strong>' + size + '×' + size + ' · ' + levelLabel + '</strong> · ' +
+      clues + ' gegeven · blokken ' + boxRows + '×' + boxCols;
+
+    const locked = state.solved || state.revealed;
+    ['erase', 'undo', 'hint', 'check', 'reveal', 'notes-toggle'].forEach(function (id) { $(id).disabled = locked; });
+    padButtons.forEach(function (b) { b.disabled = locked; });
+    $('undo').disabled = locked || state.history.length === 0;
+  }
+
+  function digitsOf(mask) {
+    const out = [];
+    for (let d = 1; d < 16; d++) if (mask & (1 << d)) out.push(d);
+    return out;
+  }
+
+  function showMessage(text, kind) {
+    els.message.innerHTML = '';
+    if (!text) return;
+    const div = document.createElement('div');
+    div.className = 'banner' + (kind && kind !== 'ok' ? ' ' + kind : '');
+    div.textContent = text;
+    els.message.appendChild(div);
+  }
+
+  // ---------------------------------------------------------- spelen
+
+  function select(i) {
+    if (!state) return;
+    state.selected = i;
+    cells.forEach(function (c, k) { c.tabIndex = k === i ? 0 : -1; });
+    if (cells[i] && document.activeElement !== cells[i]) cells[i].focus({ preventScroll: true });
+    render();
+  }
+
+  function editable(i) {
+    return state && i >= 0 && !state.game.puzzle[i] && !state.hinted.has(i) && !state.solved && !state.revealed;
+  }
+
+  function snapshot(indices) {
+    return indices.map(function (i) { return { i: i, value: state.values[i], notes: state.notes[i] }; });
+  }
+
+  function enter(v) {
+    const i = state.selected;
+    if (!editable(i)) {
+      if (i < 0) showMessage('Kies eerst een leeg vakje in het rooster.', 'info');
+      return;
+    }
+    const geo = S.geometry(state.game.size);
+    if (state.notesMode) {
+      if (state.values[i]) return;
+      state.history.push(snapshot([i]));
+      state.notes[i] ^= 1 << v;
+    } else if (state.values[i] === v) {
+      state.history.push(snapshot([i]));
+      state.values[i] = 0;
+    } else {
+      const bit = 1 << v;
+      const touched = [i].concat(geo.peers[i].filter(function (p) { return state.notes[p] & bit; }));
+      state.history.push(snapshot(touched));
+      state.values[i] = v;
+      state.notes[i] = 0;
+      touched.forEach(function (p) { if (p !== i) state.notes[p] &= ~bit; });
+    }
+    state.wrong.delete(i);
+    afterChange();
+  }
+
+  function erase() {
+    const i = state.selected;
+    if (!editable(i) || (!state.values[i] && !state.notes[i])) return;
+    state.history.push(snapshot([i]));
+    state.values[i] = 0;
+    state.notes[i] = 0;
+    state.wrong.delete(i);
+    afterChange();
+  }
+
+  function undo() {
+    const step = state.history.pop();
+    if (!step || state.solved || state.revealed) return;
+    step.forEach(function (s) {
+      if (state.game.puzzle[s.i] || state.hinted.has(s.i)) return;
+      state.values[s.i] = s.value;
+      state.notes[s.i] = s.notes;
+      state.wrong.delete(s.i);
+    });
+    afterChange();
+  }
+
+  function hint() {
+    const { puzzle, solution } = state.game;
+    let i = state.selected;
+    const needsHelp = function (k) { return !puzzle[k] && !state.hinted.has(k) && state.values[k] !== solution[k]; };
+    if (i < 0 || !needsHelp(i)) {
+      const open = [];
+      for (let k = 0; k < solution.length; k++) if (needsHelp(k)) open.push(k);
+      if (!open.length) return;
+      i = open[Math.floor(Math.random() * open.length)];
+    }
+    const geo = S.geometry(state.game.size);
+    const v = solution[i];
+    state.values[i] = v;
+    state.notes[i] = 0;
+    geo.peers[i].forEach(function (p) { state.notes[p] &= ~(1 << v); });
+    state.hinted.add(i);
+    state.wrong.delete(i);
+    state.selected = i;
+    showMessage('Hint: rij ' + (geo.rowOf[i] + 1) + ', kolom ' + (geo.colOf[i] + 1) + ' is een ' + v + '.', 'info');
+    afterChange(true);
+  }
+
+  function check() {
+    const { puzzle, solution } = state.game;
+    state.wrong = new Set();
+    let filled = 0;
+    for (let i = 0; i < solution.length; i++) {
+      if (puzzle[i] || !state.values[i]) continue;
+      filled++;
+      if (state.values[i] !== solution[i]) state.wrong.add(i);
+    }
+    const n = state.wrong.size;
+    if (!filled) showMessage('Je hebt nog niets ingevuld om te controleren.', 'info');
+    else if (n === 0) showMessage('Alles wat je hebt ingevuld klopt.', 'ok');
+    else showMessage(n === 1 ? 'Eén vakje klopt niet. Het is rood gemarkeerd.' : n + ' vakjes kloppen niet. Ze zijn rood gemarkeerd.', 'warn');
+    render();
+  }
+
+  function disarmReveal() {
+    clearTimeout(revealArmed);
+    revealArmed = null;
+    els.reveal.classList.remove('danger-armed');
+    els.reveal.textContent = 'Oplossing tonen';
+  }
+  function reveal() {
+    if (!revealArmed) {
+      els.reveal.classList.add('danger-armed');
+      els.reveal.textContent = 'Zeker weten? Klik nogmaals';
+      revealArmed = setTimeout(disarmReveal, 3500);
+      return;
+    }
+    disarmReveal();
+    stopClock();
+    state.values = state.game.solution.slice();
+    state.notes.fill(0);
+    state.wrong = new Set();
+    state.revealed = true;
+    showMessage('Dit is de oplossing. Maak een nieuwe puzzel om verder te spelen.', 'info');
+    render();
+    updateTimer();
+    save();
+  }
+
+  function setNotesMode(on) {
+    state.notesMode = on;
+    els.notesToggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+    els.play.classList.toggle('notes-mode', on);
+  }
+
+  function afterChange(keepMessage) {
+    const { solution } = state.game;
+    const done = state.values.every(function (v, i) { return v === solution[i]; });
+    if (done && !state.solved) {
+      stopClock();
+      state.solved = true;
+      state.selected = -1;
+      showMessage('Opgelost in ' + els.timer.textContent + '! ' +
+        (state.hinted.size ? 'Met ' + state.hinted.size + (state.hinted.size === 1 ? ' hint.' : ' hints.') : 'Zonder hints.'), 'ok');
+      updateTimer();
+    } else if (!keepMessage && els.message.firstChild && !state.solved) {
+      showMessage('');
+    }
+    render();
+    save();
+  }
+
+  // ---------------------------------------------------------- invoer
+
+  document.addEventListener('keydown', function (e) {
+    if (!state) return;
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' && t.type === 'text')) return;
+    const size = state.game.size;
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); return; }
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const d = Number(e.key);
+    if (Number.isInteger(d) && d >= 1 && d <= size) { e.preventDefault(); enter(d); return; }
+    if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') { e.preventDefault(); erase(); return; }
+    if (e.key === 'n' || e.key === 'N') { e.preventDefault(); if (!state.solved && !state.revealed) setNotesMode(!state.notesMode); return; }
+    const moves = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
+    if (moves[e.key]) {
+      e.preventDefault();
+      let i = state.selected < 0 ? 0 : state.selected;
+      const r = (Math.floor(i / size) + moves[e.key][0] + size) % size;
+      const c = ((i % size) + moves[e.key][1] + size) % size;
+      select(r * size + c);
+    }
+  });
+
+  els.notesToggle.addEventListener('click', function () { setNotesMode(!state.notesMode); });
+  $('erase').addEventListener('click', erase);
+  $('undo').addEventListener('click', undo);
+  $('hint').addEventListener('click', hint);
+  $('check').addEventListener('click', check);
+  els.reveal.addEventListener('click', reveal);
+  els.newGame.addEventListener('click', function () {
+    const { size, level } = selectedSettings();
+    startGame(size, level, Math.floor(Math.random() * 1e6));
+  });
+  document.querySelectorAll('input[name="size"], input[name="level"]').forEach(function (r) {
+    r.addEventListener('change', updateLevelNote);
+  });
+
+  $('copy-code').addEventListener('click', function () {
+    const btn = this;
+    const text = els.codeCurrent.value;
+    const done = function () { btn.textContent = 'Gekopieerd'; setTimeout(function () { btn.textContent = 'Kopiëren'; }, 1500); };
+    try {
+      navigator.clipboard.writeText(text).then(done, function () { els.codeCurrent.select(); });
+    } catch (err) {
+      els.codeCurrent.select();
+    }
+  });
+  $('load-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const parsed = S.parseCode(els.codeInput.value.trim().toLowerCase().replace(/^#/, ''));
+    if (!parsed) {
+      showMessage('Die code ken ik niet. Een code ziet eruit als 9-expert-482113: grootte, niveau en een getal.', 'warn');
+      return;
+    }
+    els.codeInput.value = '';
+    startGame(parsed.size, parsed.level, parsed.seed);
+  });
+
+  // ---------------------------------------------------------- adresbalk
+
+  function setHash(code) {
+    if (location.hash.slice(1) === code) return;
+    try { history.replaceState(null, '', '#' + code); } catch (e) { /* bv. sandbox */ }
+  }
+  window.addEventListener('hashchange', function () {
+    const parsed = S.parseCode(location.hash.slice(1));
+    if (parsed && (!state || state.game.code !== location.hash.slice(1))) startGame(parsed.size, parsed.level, parsed.seed);
+  });
+
+  // ---------------------------------------------------------- start
+
+  function boot(data) {
+    updateLevelNote();
+    const fromHash = S.parseCode(location.hash.slice(1));
+    const saved = (data && data.code ? data : null) || load();
+    if (fromHash) {
+      startGame(fromHash.size, fromHash.level, fromHash.seed, saved);
+    } else if (saved && S.parseCode(saved.code)) {
+      const p = S.parseCode(saved.code);
+      startGame(p.size, p.level, p.seed, saved);
+    } else {
+      startGame(9, 'gemiddeld', Math.floor(Math.random() * 1e6));
+    }
+  }
+
+  const hot = window.claude && window.claude.hot;
+  if (hot && hot.snapshot) hot.snapshot(function () { return state ? serialize() : {}; });
+  if (hot && hot.ready) hot.ready(boot); else boot(hot && hot.data);
+})();
+</script>
+</body>
+</html>

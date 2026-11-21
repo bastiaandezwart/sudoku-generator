@@ -518,7 +518,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   font-weight: 600;
 }
 .book-after .big-btn { width: 100%; }
-.sticker.flyer { position: fixed; left: 0; top: 0; z-index: 40; margin: 0; pointer-events: none; }
+.sticker.flyer { position: absolute; left: 0; top: 0; z-index: 40; margin: 0; pointer-events: none; transform-origin: center; will-change: transform; }
 .empty-note { margin: 0; color: var(--muted); font-size: 0.95rem; }
 .grown-ups { margin: 0; font-size: 0.8rem; color: var(--muted); text-align: center; }
 .grown-ups a { color: var(--lilac); }
@@ -1366,51 +1366,120 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     });
   }
 
-  // Na het oplossen: de sticker vliegt naar zijn plekje in het boek.
+  // ---- plakken: het scherm beweegt mee met de sticker, als een camera
+  const scroller = document.scrollingElement || document.documentElement;
+  function clampScroll(y) { return Math.max(0, Math.min(y, scroller.scrollHeight - innerHeight)); }
+  function easeInOut(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  function tween(ms, fn) {
+    return new Promise(function (resolve) {
+      const t0 = performance.now();
+      (function frame(now) {
+        const t = Math.min(1, (now - t0) / ms);
+        fn(easeInOut(t), t);
+        if (t < 1) requestAnimationFrame(frame); else resolve();
+      })(t0);
+    });
+  }
+  // Positie in het document, zonder rekening te houden met omslaande (gedraaide) bladzijden.
+  function docRect(el) {
+    let x = 0, y = 0, n = el;
+    while (n) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; }
+    return { x: x, y: y, w: el.offsetWidth };
+  }
+  function slotOf(entry) {
+    return $('pages').querySelector('.page[data-page="' + PAGES.indexOf(entry.level) + '"] .slot[data-s="' + entry.s + '"]');
+  }
+
   function stickIt() {
     const entry = pendingSticker;
     if (!entry) { closeParty(); return; }
     const from = els.partySticker.getBoundingClientRect();
     els.party.hidden = true;
+    const pageIdx = PAGES.indexOf(entry.level);
+    const slot = slotOf(entry);
+
+    if (reduceMotion() || !slot) {
+      flipTo(pageIdx).then(function () {
+        land();
+        const st = slotOf(entry);
+        if (st) st.scrollIntoView({ block: 'center' });
+      });
+      return;
+    }
+
+    // De sticker hangt in het document (niet vast op het scherm), zodat hij meeschuift.
+    const size = from.width;
     const flyer = document.createElement('span');
     flyer.className = 'sticker flyer lvl-' + entry.level;
     flyer.innerHTML = entry.s + '<span class="badge">' + STARS[entry.level] + '</span>';
-    flyer.style.width = from.width + 'px';
-    flyer.style.height = from.height + 'px';
-    flyer.style.fontSize = (from.width * 0.48) + 'px';
-    flyer.style.left = from.left + 'px';
-    flyer.style.top = from.top + 'px';
-    const fast = reduceMotion();
-    if (!fast) document.body.appendChild(flyer);
-    const hover = fast ? null : flyer.animate(
-      [{ transform: 'translateY(0) rotate(-5deg)' }, { transform: 'translateY(-10px) rotate(5deg)' }],
-      { duration: 450, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out' });
-    setBubble('Waar hoort deze sticker? Even zoeken in je boek…');
-    $('book').scrollIntoView({ behavior: fast ? 'auto' : 'smooth', block: 'center' });
-    setTimeout(function () {
-      flipTo(PAGES.indexOf(entry.level)).then(function () {
-        const slot = $('pages').querySelector('.page[data-page="' + PAGES.indexOf(entry.level) + '"] .slot[data-s="' + entry.s + '"]');
-        if (fast || !slot) { land(); return; }
-        const to = slot.getBoundingClientRect();
-        if (hover) hover.cancel();
-        const dx = to.left + to.width / 2 - (from.left + from.width / 2);
-        const dy = to.top + to.height / 2 - (from.top + from.height / 2);
-        const sc = to.width / from.width;
-        const r = tilt(STICKER_SETS[entry.level].indexOf(entry.s));
-        const fly = flyer.animate([
-          { transform: 'translate(0, 0) scale(1) rotate(0deg)' },
-          { transform: 'translate(' + dx * 0.45 + 'px, ' + (dy * 0.45 - 70) + 'px) scale(' + (0.6 + sc) + ') rotate(16deg)', offset: 0.55 },
-          { transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(' + sc + ') rotate(' + r + 'deg)' },
-        ], { duration: 900, easing: 'cubic-bezier(0.5, 0, 0.3, 1)', fill: 'forwards' });
-        fly.onfinish = land;
+    flyer.style.width = size + 'px';
+    flyer.style.height = size + 'px';
+    flyer.style.fontSize = (size * 0.48) + 'px';
+    let fx = from.left + scrollX, fy = from.top + scrollY, fs = 1, fr = 0;
+    const put = function () { flyer.style.transform = 'translate(' + fx + 'px, ' + fy + 'px) scale(' + fs + ') rotate(' + fr + 'deg)'; };
+    put();
+    document.body.appendChild(flyer);
+    setBubble('Op naar je stickerboek!');
+
+    // 1. Camera schuift naar het plekje; de sticker zweeft bovenin het scherm mee.
+    const vh = innerHeight;
+    const sd = docRect(slot);
+    const camStart = scrollY;
+    const camEnd = clampScroll(sd.y + sd.w / 2 - vh * 0.55);
+    const startX = from.left, startY = from.top;
+    const hoverX = (innerWidth - size) / 2, hoverY = Math.max(8, vh * 0.1);
+    tween(1200, function (e) {
+      const cam = camStart + (camEnd - camStart) * e;
+      scrollTo(0, cam);
+      fx = scrollX + startX + (hoverX - startX) * e;
+      fy = cam + startY + (hoverY - startY) * e;
+      fs = 1 - 0.2 * e;
+      fr = -8 * e;
+      put();
+    }).then(function () {
+      // 2. Bladeren naar de goede bladzijde terwijl de sticker zweeft.
+      let bobbing = true;
+      const baseY = fy;
+      const t0 = performance.now();
+      (function bob(now) {
+        if (!bobbing) return;
+        fy = baseY + Math.sin((now - t0) / 170) * 5;
+        fr = -8 + Math.sin((now - t0) / 230) * 6;
+        put();
+        requestAnimationFrame(bob);
+      })(t0);
+      setBubble('Waar hoort deze sticker? Even bladeren…');
+      return flipTo(pageIdx).then(function () { return wait(200); }).then(function () { bobbing = false; });
+    }).then(function () {
+      // 3. Vliegen naar het plekje; de camera houdt het plekje midden in beeld.
+      const r = slot.getBoundingClientRect();
+      const camA = scrollY;
+      const camB = clampScroll(r.top + scrollY + r.height / 2 - vh * 0.55);
+      const tx = r.left + scrollX + r.width / 2 - size / 2;
+      const ty = r.top + scrollY + r.height / 2 - size / 2; // in documentcoördinaten
+      const ts = r.width / size;
+      const tr = tilt(STICKER_SETS[entry.level].indexOf(entry.s));
+      const bx = fx, by = fy, bs = fs, br = fr;
+      setBubble('Daar hoort hij!');
+      return tween(950, function (e, t) {
+        if (camB !== camA) scrollTo(0, camA + (camB - camA) * e);
+        fx = bx + (tx - bx) * e;
+        fy = by + (ty - by) * e - Math.sin(Math.PI * t) * 60;
+        fs = bs + (ts - bs) * e + Math.sin(Math.PI * t) * 0.3;
+        fr = br + (tr - br) * e;
+        put();
       });
-    }, fast ? 0 : 600);
+    }).then(function () {
+      flyer.remove();
+      land();
+    });
 
     function land() {
-      flyer.remove();
       pendingSticker = null;
       renderBook();
-      const st = $('pages').querySelector('.page[data-page="' + PAGES.indexOf(entry.level) + '"] .slot[data-s="' + entry.s + '"] .sticker');
+      const placedSlot = slotOf(entry);
+      const st = placedSlot && placedSlot.querySelector('.sticker');
       if (st) st.classList.add('slap');
       sounds.slap();
       persist();
@@ -1421,6 +1490,18 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
       $('book-after-text').textContent = msg;
       $('book-after').hidden = false;
       setBubble(msg, 'yay');
+      // 4. Even laten zien, dan rustig iets verder naar "Nog een puzzel!", met de sticker nog in beeld.
+      if (reduceMotion() || !placedSlot) return;
+      wait(1100).then(function () {
+        const a = $('book-after').getBoundingClientRect();
+        const sr = placedSlot.getBoundingClientRect();
+        const want = Math.min(a.bottom - innerHeight + 16, sr.top - 24);
+        if (want > 4) {
+          const y0 = scrollY;
+          const y1 = clampScroll(y0 + want);
+          tween(700, function (e) { scrollTo(0, y0 + (y1 - y0) * e); });
+        }
+      });
     }
   }
 

@@ -345,7 +345,11 @@ details.share summary { cursor: pointer; font-weight: 500; font-size: 0.9rem; }
 }
 .small { margin: 0; font-size: 0.8rem; color: var(--muted); }
 
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+.board.deal .cell { animation: cell-in 0.35s ease-out both; animation-delay: var(--d, 0s); }
+@keyframes cell-in { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: none; } }
+.banner.fresh { animation: banner-in 0.4s ease-out; }
+@keyframes banner-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
 @media print {
   body { background: #fff; color: #000; }
@@ -459,6 +463,7 @@ details.share summary { cursor: pointer; font-weight: 500; font-size: 0.9rem; }
   let padButtons = [];
   let tickHandle = null;
   let revealArmed = null;
+  let newArmed = null;
 
   // ---------------------------------------------------------- opslag
 
@@ -498,9 +503,10 @@ details.share summary { cursor: pointer; font-weight: 500; font-size: 0.9rem; }
     const { size, level } = selectedSettings();
     const clues = S.CLUES[size][level];
     els.levelNote.textContent = LEVEL_NOTES[level] + ' Ongeveer ' + clues + ' van de ' + size * size + ' vakjes gegeven.';
+    if (!newArmed) els.newGame.textContent = 'Nieuwe ' + size + '×' + size + ' · ' + S.LEVEL_LABELS[level] + ' maken';
   }
 
-  function startGame(size, level, seed, saved) {
+  function startGame(size, level, seed, saved, fromUser) {
     els.busy.hidden = false;
     els.newGame.disabled = true;
     // Even wachten zodat de "bezig"-melding getekend wordt.
@@ -520,7 +526,9 @@ details.share summary { cursor: pointer; font-weight: 500; font-size: 0.9rem; }
         revealed: false,
         solved: false,
       };
+      let restored = false;
       if (saved && saved.code === game.code && Array.isArray(saved.values) && saved.values.length === game.puzzle.length) {
+        restored = true;
         state.values = saved.values.map((v, i) => (game.puzzle[i] ? game.puzzle[i] : v | 0));
         if (Array.isArray(saved.notes) && saved.notes.length === game.puzzle.length) state.notes = saved.notes.map((m) => m | 0);
         state.hinted = new Set(saved.hinted || []);
@@ -540,11 +548,31 @@ details.share summary { cursor: pointer; font-weight: 500; font-size: 0.9rem; }
       state.startedAt = Date.now();
       if (state.solved) showMessage('Deze puzzel heb je al opgelost.', 'ok');
       else if (state.revealed) showMessage('De oplossing is getoond. Maak een nieuwe puzzel om verder te spelen.', 'info');
-      else showMessage('');
+      else if (restored) showMessage('');
+      else showMessage('Nieuwe puzzel klaar: ' + size + '×' + size + ' · ' + S.LEVEL_LABELS[level] + ', met ' + game.clues + ' gegeven cijfers. Succes!', 'info');
       render();
+      if (!restored) dealAnimation();
+      if (fromUser) bringIntoView();
       startTimer();
       save();
     }, 30);
+  }
+
+  function dealAnimation() {
+    const size = state.game.size;
+    cells.forEach(function (c, i) { c.style.setProperty('--d', ((Math.floor(i / size) + (i % size)) * 0.018).toFixed(3) + 's'); });
+    els.board.classList.remove('deal');
+    void els.board.offsetWidth;
+    els.board.classList.add('deal');
+    setTimeout(function () { els.board.classList.remove('deal'); }, 1000);
+  }
+  function bringIntoView() {
+    const area = document.querySelector('.area-board');
+    const r = area.getBoundingClientRect();
+    if (r.top < 0 || r.top > innerHeight * 0.4) {
+      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      area.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    }
   }
 
   function currentElapsed() {
@@ -703,7 +731,7 @@ details.share summary { cursor: pointer; font-weight: 500; font-size: 0.9rem; }
     els.message.innerHTML = '';
     if (!text) return;
     const div = document.createElement('div');
-    div.className = 'banner' + (kind && kind !== 'ok' ? ' ' + kind : '');
+    div.className = 'banner fresh' + (kind && kind !== 'ok' ? ' ' + kind : '');
     div.textContent = text;
     els.message.appendChild(div);
   }
@@ -889,9 +917,24 @@ details.share summary { cursor: pointer; font-weight: 500; font-size: 0.9rem; }
   $('hint').addEventListener('click', hint);
   $('check').addEventListener('click', check);
   els.reveal.addEventListener('click', reveal);
+  function disarmNew() {
+    clearTimeout(newArmed);
+    newArmed = null;
+    els.newGame.classList.remove('danger-armed');
+    updateLevelNote();
+  }
   els.newGame.addEventListener('click', function () {
+    const busy = state && !state.solved && !state.revealed &&
+      state.values.some(function (v, i) { return v && !state.game.puzzle[i]; });
+    if (busy && !newArmed) {
+      els.newGame.classList.add('danger-armed');
+      els.newGame.textContent = 'Huidige puzzel stoppen? Klik nogmaals';
+      newArmed = setTimeout(disarmNew, 3500);
+      return;
+    }
+    disarmNew();
     const { size, level } = selectedSettings();
-    startGame(size, level, Math.floor(Math.random() * 1e6));
+    startGame(size, level, Math.floor(Math.random() * 1e6), null, true);
   });
   document.querySelectorAll('input[name="size"], input[name="level"]').forEach(function (r) {
     r.addEventListener('change', updateLevelNote);
@@ -915,7 +958,7 @@ details.share summary { cursor: pointer; font-weight: 500; font-size: 0.9rem; }
       return;
     }
     els.codeInput.value = '';
-    startGame(parsed.size, parsed.level, parsed.seed);
+    startGame(parsed.size, parsed.level, parsed.seed, null, true);
   });
 
   // ---------------------------------------------------------- adresbalk

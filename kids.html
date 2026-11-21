@@ -153,6 +153,26 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   display: flex;
   align-items: center;
 }
+.bubble .say { display: block; }
+.bubble.bounce { animation: bubble 0.5s ease-out; }
+.ask { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.mini-btn {
+  border: 0;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-weight: 600;
+  font-size: 1rem;
+  background: var(--pink);
+  color: #fff;
+  box-shadow: 0 3px 0 #c22c6f;
+}
+.mini-btn.soft { background: var(--lilac-soft); color: var(--ink); box-shadow: 0 3px 0 rgb(58 43 92 / 0.15); }
+.big-btn:disabled { opacity: 0.75; cursor: default; }
+.board.out .box { animation: shrink 0.2s ease-in forwards; }
+.board.deal .cell { animation: deal 0.45s cubic-bezier(0.3, 1.4, 0.5, 1) both; animation-delay: var(--d, 0s); }
+@keyframes shrink { to { transform: scale(0.85) rotate(2deg); opacity: 0; } }
+@keyframes deal { from { transform: scale(0.2) rotate(-14deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes bubble { 0% { transform: scale(0.92); } 60% { transform: scale(1.04); } 100% { transform: scale(1); } }
 .bubble .sym { font-family: var(--emoji), var(--font); }
 .bubble.oops { background: var(--red-soft); }
 .bubble.yay { background: var(--mint-soft); }
@@ -480,6 +500,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     oops() { tone(330, 0.18, 'sine'); tone(247, 0.25, 'sine', 0.13); },
     hint() { tone(880, 0.12, 'sine'); tone(1320, 0.2, 'sine', 0.08); },
     erase() { tone(440, 0.08, 'triangle', 0, 0.08); },
+    shuffle() { [0, 0.05, 0.1, 0.15, 0.2, 0.25].forEach(function (w, k) { tone(520 + k * 80, 0.06, 'triangle', w, 0.06); }); },
     win() { [523, 659, 784, 1047, 1319].forEach(function (f, k) { tone(f, 0.3, 'triangle', k * 0.11, 0.14); }); },
   };
 
@@ -492,10 +513,26 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
       : '<span class="sym">' + t.symbols[v - 1] + '</span>';
   }
   function symText(v) { return theme().symbols[v - 1]; }
-  function setBubble(html, kind) {
-    els.bubble.innerHTML = html;
+  const reduceMotion = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  function setBubble(html, kind, bounce) {
+    els.bubble.innerHTML = '<span class="say">' + html + '</span>';
     els.bubble.className = 'bubble' + (kind ? ' ' + kind : '');
+    if (bounce) { void els.bubble.offsetWidth; els.bubble.classList.add('bounce'); }
   }
+  function bringIntoView(el) {
+    const r = el.getBoundingClientRect();
+    if (r.top < 0 || r.top > innerHeight * 0.35) el.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' });
+  }
+  function dealAnimation() {
+    const size = game.size;
+    cells.forEach(function (c, i) { c.style.setProperty('--d', ((Math.floor(i / size) + (i % size)) * 0.035).toFixed(3) + 's'); });
+    els.board.classList.remove('deal');
+    void els.board.offsetWidth;
+    els.board.classList.add('deal');
+    clearTimeout(dealAnimation.t);
+    dealAnimation.t = setTimeout(function () { els.board.classList.remove('deal'); }, 1200);
+  }
+  const STARS = { makkelijk: '★', gemiddeld: '★★', moeilijk: '★★★' };
 
   // ------------------------------------------------------------ instellingen
   function buildThemeChoices() {
@@ -513,7 +550,13 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
       b.addEventListener('click', function () {
         settings.theme = key;
         syncChoices();
-        if (game) { render(); buildPalette(); }
+        if (game) {
+          buildPalette();
+          render();
+          dealAnimation();
+          sounds.shuffle();
+          setBubble(t.digits ? 'Nu spelen we met cijfers!' : 'Nu spelen we met ' + t.label.toLowerCase() + '! ' + t.symbols.slice(0, game.size).join(' '), '', true);
+        }
         persist();
       });
       els.themes.appendChild(b);
@@ -527,15 +570,16 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     els.sound.querySelector('.ico').textContent = settings.sound ? '🔊' : '🔇';
     els.mistakes.setAttribute('aria-pressed', settings.showMistakes);
   }
+  // Een grootte of moeilijkheid kiezen maakt meteen een nieuwe puzzel.
   document.querySelectorAll('[data-size]').forEach(function (b) {
-    b.addEventListener('click', function () { settings.size = Number(b.dataset.size); syncChoices(); persist(); });
+    b.addEventListener('click', function () { requestNew(Number(b.dataset.size), settings.level); });
   });
   document.querySelectorAll('[data-level]').forEach(function (b) {
-    b.addEventListener('click', function () { settings.level = b.dataset.level; syncChoices(); persist(); });
+    b.addEventListener('click', function () { requestNew(settings.size, b.dataset.level); });
   });
 
   // ------------------------------------------------------------ nieuw spel
-  function startGame(size, level, seed, restore) {
+  function startGame(size, level, seed, restore, announce) {
     game = S.generate(size, level, seed);
     values = game.puzzle.slice();
     hinted = new Set(); wrong = new Set();
@@ -552,8 +596,58 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     render();
     if (solved) setBubble('Deze puzzel heb je al opgelost. Tik op <b>Nieuwe puzzel!</b> voor een nieuwe.', 'yay');
     else if (values.some(function (v, i) { return v && !game.puzzle[i]; })) setBubble('Welkom terug! Ga maar verder waar je was.');
+    else if (announce) setBubble('Daar is je nieuwe puzzel! <b>' + size + ' × ' + size + '</b>, <span style="color: var(--sun)">' + STARS[level] + '</span><br>Kies een plaatje en tik op een leeg vakje.', 'yay', true);
     else setBubble('Kies een plaatje hieronder en tik op een leeg vakje.');
+    if (announce) dealAnimation();
     persist();
+  }
+
+  function hasProgress() {
+    return !!game && !solved && values.some(function (v, i) { return v && !game.puzzle[i]; });
+  }
+
+  function requestNew(size, level) {
+    settings.size = size;
+    settings.level = level;
+    syncChoices();
+    persist();
+    if (hasProgress()) {
+      setBubble('Je bent nog bezig met deze puzzel. Wil je echt een nieuwe?' +
+        '<span class="ask"><button class="mini-btn" type="button" id="ask-yes">Ja, een nieuwe!</button>' +
+        '<button class="mini-btn soft" type="button" id="ask-no">Nee, verder spelen</button></span>', '', true);
+      $('ask-yes').addEventListener('click', dealNew);
+      $('ask-no').addEventListener('click', function () {
+        settings.size = game.size;
+        settings.level = game.level;
+        syncChoices();
+        persist();
+        setBubble('Oké, speel maar lekker verder!');
+      });
+      bringIntoView(document.querySelector('.owl-row'));
+      return;
+    }
+    dealNew();
+  }
+
+  let dealing = false;
+  function dealNew() {
+    if (dealing) return;
+    dealing = true;
+    els.party.hidden = true;
+    const btn = $('new-game');
+    btn.disabled = true;
+    btn.textContent = 'Even schudden…';
+    sounds.shuffle();
+    const wait = game && !reduceMotion() ? 260 : 0;
+    if (wait) els.board.classList.add('out');
+    bringIntoView(document.querySelector('.owl-row'));
+    setTimeout(function () {
+      els.board.classList.remove('out');
+      startGame(settings.size, settings.level, Math.floor(Math.random() * 1e6), null, true);
+      btn.disabled = false;
+      btn.textContent = 'Nieuwe puzzel!';
+      dealing = false;
+    }, wait);
   }
 
   function buildBoard() {
@@ -882,12 +976,8 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   }
 
   // ------------------------------------------------------------ knoppen
-  function newPuzzle() {
-    els.party.hidden = true;
-    startGame(settings.size, settings.level, Math.floor(Math.random() * 1e6));
-  }
-  $('new-game').addEventListener('click', newPuzzle);
-  $('again').addEventListener('click', newPuzzle);
+  $('new-game').addEventListener('click', function () { requestNew(settings.size, settings.level); });
+  $('again').addEventListener('click', dealNew);
   $('close-party').addEventListener('click', function () { els.party.hidden = true; });
   $('hint').addEventListener('click', hint);
   els.reset.addEventListener('click', reset);

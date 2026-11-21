@@ -23,7 +23,8 @@ Open `kids.html` voor een versie voor kinderen van 5 tot 8 jaar:
 - Twee manieren om te spelen: tik eerst een leeg vakje en dan een plaatje, of kies eerst een plaatje en "stempel" het op de vakjes.
 - Een uiltje legt uit wat er mis is ("Er staat al een 🐱 in deze rij") en moedigt aan.
 - **Help mij** legt een goed plaatje neer, het liefst op een plek waar maar één plaatje past.
-- Na het oplossen: confetti, 1 tot 3 sterren en een sticker voor in het stickerboek.
+- Na het oplossen: confetti, 1 tot 3 hartjes (minder fouten en hulp = meer hartjes) en een sticker voor in het stickerboek.
+- Elk niveau heeft een eigen set van 25 stickers, met een eigen kleur en sterren op de sticker: groen ★, blauw ★★, goud ★★★. Je krijgt pas een sticker dubbel als je de hele set hebt.
 - Geen timer. Het geluid en het meteen tonen van fouten kun je uitzetten.
 
 ## Roosters

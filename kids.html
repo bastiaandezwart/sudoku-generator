@@ -296,17 +296,62 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
 
 /* --- stickerboek --- */
 .stickers h2 { margin: 0; font-size: 1.25rem; font-weight: 700; }
-.sticker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 6px; }
+.lvl-makkelijk { --lvl: var(--mint); --lvl-soft: var(--mint-soft); }
+.lvl-gemiddeld { --lvl: var(--sky); --lvl-soft: var(--sky-soft); }
+.lvl-moeilijk { --lvl: #e09a00; --lvl-soft: var(--sun-soft); }
+.lvl-oud { --lvl: var(--lilac); --lvl-soft: var(--lilac-soft); }
+.sticker-level { display: grid; gap: 8px; padding-top: 12px; border-top: 2px dashed var(--lilac-soft); }
+.sticker-head { margin: 0; display: flex; align-items: baseline; gap: 8px; font-weight: 600; }
+.sticker-head .lvl-stars { color: var(--lvl); letter-spacing: 0.04em; }
+.sticker-head .tally { margin-left: auto; font-size: 0.85rem; font-weight: 500; color: var(--muted); }
+.sticker-meter { height: 8px; border-radius: 4px; background: var(--lvl-soft); overflow: hidden; }
+.sticker-meter i { display: block; height: 100%; background: var(--lvl); border-radius: 4px; }
+.sticker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); gap: 14px 8px; padding-bottom: 4px; }
 .sticker {
+  position: relative;
   aspect-ratio: 1;
   display: grid;
   place-items: center;
   font-family: var(--emoji);
-  font-size: 1.7rem;
-  background: var(--lilac-soft);
+  font-size: 1.6rem;
+  line-height: 1;
+  background: var(--lvl-soft);
+  border: 3px solid var(--lvl);
   border-radius: 50%;
+  box-shadow: 0 2px 0 rgb(58 43 92 / 0.12);
 }
-.sticker.new { animation: pop 0.5s ease-out; background: var(--sun-soft); }
+.sticker.lvl-moeilijk { background: radial-gradient(circle at 30% 25%, #fff 0 18%, transparent 19%), var(--lvl-soft); }
+.sticker .badge {
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--lvl);
+  color: #fff;
+  font-family: var(--font);
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1.5;
+  padding: 0 5px;
+  border-radius: 8px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.sticker .count {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: var(--pink);
+  color: #fff;
+  font-family: var(--font);
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1.6;
+  padding: 0 5px;
+  border-radius: 8px;
+}
+.sticker.slot { border-style: dashed; background: transparent; box-shadow: none; opacity: 0.45; color: var(--lvl); font-family: var(--font); font-size: 1.1rem; font-weight: 700; }
+.sticker.new { animation: pop 0.6s ease-out; box-shadow: 0 0 0 4px var(--pink-soft); }
 .empty-note { margin: 0; color: var(--muted); font-size: 0.95rem; }
 .grown-ups { margin: 0; font-size: 0.8rem; color: var(--muted); text-align: center; }
 .grown-ups a { color: var(--lilac); }
@@ -334,9 +379,11 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   animation: pop 0.4s ease-out;
 }
 .party-card h2 { margin: 0; font-size: 2.6rem; color: var(--pink); line-height: 1; }
-.party-stars { font-size: 2.8rem; letter-spacing: 0.06em; color: var(--sun); text-shadow: 0 2px 0 rgb(58 43 92 / 0.2); }
-.party-stars .off { color: #e4ddf3; text-shadow: none; }
-.party-sticker { font-family: var(--emoji); font-size: 3.4rem; line-height: 1; }
+.party-stars { font-size: 2.4rem; letter-spacing: 0.08em; color: var(--pink); line-height: 1.1; }
+.party-stars .off { color: #ecdff0; }
+.party-sticker.sticker { width: 104px; justify-self: center; font-size: 3.2rem; margin: 4px 0 8px; }
+.party-sticker.sticker .badge { font-size: 0.85rem; bottom: -12px; padding: 0 8px; }
+.party-new { display: inline-block; background: var(--pink); color: #fff; font-size: 0.8rem; font-weight: 600; border-radius: 999px; padding: 1px 10px; }
 .party-card p { margin: 0; }
 .party-card .row { display: grid; gap: 8px; }
 .link-btn { border: 0; background: none; color: var(--muted); font-weight: 500; text-decoration: underline; padding: 6px; }
@@ -410,8 +457,8 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
 
   <section class="card stickers" aria-labelledby="sticker-title">
     <h2 id="sticker-title">Mijn stickerboek</h2>
-    <div class="sticker-grid" id="sticker-grid"></div>
-    <p class="empty-note" id="sticker-empty">Los een puzzel op en verdien je eerste sticker!</p>
+    <p class="empty-note">Elke puzzel geeft een nieuwe sticker. Hoe meer sterren, hoe bijzonderder de sticker!</p>
+    <div id="sticker-book"></div>
   </section>
 
   <p class="grown-ups">Voor grote mensen: <a href="index.html">Sudokumaker</a> met cijfers, 9×9 en vier niveaus.</p>
@@ -422,8 +469,8 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     <h2 id="party-title">Hoera!</h2>
     <p>Je hebt de puzzel opgelost!</p>
     <div class="party-stars" id="party-stars"></div>
-    <p>Je nieuwe sticker:</p>
-    <div class="party-sticker" id="party-sticker"></div>
+    <p id="party-sticker-text">Je nieuwe sticker:</p>
+    <div class="party-sticker sticker" id="party-sticker"></div>
     <div class="row">
       <button class="big-btn green" type="button" id="again">Nog een puzzel!</button>
       <button class="link-btn" type="button" id="close-party">Puzzel bekijken</button>
@@ -445,14 +492,21 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     sprookjes: { label: 'Sprookjes', symbols: ['🦄', '🌈', '🌙', '🌸', '👑', '🦋'], names: ['eenhoorn', 'regenboog', 'maan', 'bloem', 'kroon', 'vlinder'] },
     cijfers:   { label: 'Cijfers',   symbols: ['1', '2', '3', '4', '5', '6'], names: ['1', '2', '3', '4', '5', '6'], digits: true },
   };
-  const STICKERS = ['🐞', '🌻', '🍦', '🎈', '🐳', '🦄', '🌟', '🍭', '🐢', '🦁', '🐝', '🍩', '🐙', '🌷', '🦒', '🧁', '🐧', '🍀', '🦜', '🎀', '🐠', '🍉', '🐨', '🪁', '🐬', '🌼', '🦩', '🍪', '🐿️', '🎠'];
+  // Elk niveau heeft zijn eigen stickers: hoe moeilijker, hoe bijzonderder.
+  const STICKER_SETS = {
+    makkelijk: ['🐞', '🌻', '🍦', '🎈', '🐢', '🐝', '🌷', '🍀', '🐣', '🍓', '🌼', '🐌', '🦔', '🍎', '🧸', '🐥', '🌱', '🍉', '🐟', '🦆', '🍄', '🐛', '🥕', '🌞', '🐸'],
+    gemiddeld: ['🐳', '🐬', '🦒', '🐧', '🦜', '🐙', '🐨', '🦩', '🐠', '🦋', '🐼', '🦊', '🐰', '🍭', '🧁', '🍩', '🪁', '🎠', '🚲', '🎨', '🦦', '🐿️', '🍪', '🎀', '🛼'],
+    moeilijk:  ['🦄', '👑', '💎', '🏆', '🌈', '🐉', '🚀', '🪐', '🦚', '🎆', '🧚', '🏰', '🌟', '🦁', '🐯', '🎡', '🪄', '🔮', '🐲', '🌋', '🎇', '🥇', '🦖', '🦓', '🌠'],
+  };
+  const LEVEL_NAMES = { makkelijk: 'Makkelijk', gemiddeld: 'Gemiddeld', moeilijk: 'Moeilijk' };
+  const LEVEL_ADJ = { makkelijk: 'makkelijke', gemiddeld: 'gemiddelde', moeilijk: 'moeilijke' };
   const CHEERS = ['Goed zo!', 'Super!', 'Knap hoor!', 'Wauw!', 'Ga zo door!', 'Top!', 'Heel goed!', 'Jij kan dit!'];
 
   const $ = (id) => document.getElementById(id);
   const els = {
     board: $('board'), palette: $('palette'), bubble: $('bubble'), themes: $('themes'),
     party: $('party'), partyStars: $('party-stars'), partySticker: $('party-sticker'),
-    stickerGrid: $('sticker-grid'), stickerEmpty: $('sticker-empty'), reset: $('reset'),
+    reset: $('reset'),
     sound: $('sound-toggle'), mistakes: $('mistake-toggle'), confetti: $('confetti'),
   };
 
@@ -462,7 +516,16 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   if (!THEMES[settings.theme]) settings.theme = 'dieren';
   if (settings.size !== 4 && settings.size !== 6) settings.size = 4;
   if (['makkelijk', 'gemiddeld', 'moeilijk'].indexOf(settings.level) < 0) settings.level = 'makkelijk';
-  let stickers = Array.isArray(saved.stickers) ? saved.stickers.slice(-200) : [];
+  let stickers = normalizeStickers(saved.stickers);
+  // Oude stickers (alleen een plaatje) krijgen het label "oud".
+  function normalizeStickers(list) {
+    if (!Array.isArray(list)) return [];
+    return list.slice(-500).map(function (x) {
+      if (typeof x === 'string') return { s: x, level: null };
+      if (x && typeof x.s === 'string') return { s: x.s, level: STICKER_SETS[x.level] ? x.level : null, size: x.size, t: x.t };
+      return null;
+    }).filter(Boolean);
+  }
 
   let game = null, values = [], hinted = new Set(), wrong = new Set();
   let mistakes = 0, hints = 0, solved = false, selected = -1, held = null; // held: cijfer 1..n, 0 = gum, null = niets
@@ -884,27 +947,71 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     selected = -1;
     held = null;
     const slips = mistakes + hints;
-    const stars = slips === 0 ? 3 : slips <= 3 ? 2 : 1;
-    const sticker = STICKERS[Math.floor(Math.random() * STICKERS.length)];
-    stickers.push(sticker);
+    const hearts = slips === 0 ? 3 : slips <= 3 ? 2 : 1;
+    const level = STICKER_SETS[game.level] ? game.level : 'makkelijk';
+    const pick = pickSticker(level);
+    stickers.push({ s: pick.s, level: level, size: game.size, t: Date.now() });
     render();
     renderStickers(true);
     persist();
     sounds.win();
-    setBubble('Hoera, opgelost! Je verdiende een sticker.', 'yay');
-    els.partyStars.innerHTML = [1, 2, 3].map(function (k) { return '<span class="' + (k <= stars ? '' : 'off') + '">★</span>'; }).join('');
-    els.partyStars.setAttribute('aria-label', stars + ' van de 3 sterren');
-    els.partySticker.textContent = sticker;
+    setBubble('Hoera, opgelost! Je verdiende een ' + STARS[level] + '-sticker.', 'yay');
+    els.partyStars.innerHTML = [1, 2, 3].map(function (k) { return '<span class="' + (k <= hearts ? '' : 'off') + '">♥</span>'; }).join('');
+    els.partyStars.setAttribute('aria-label', hearts + ' van de 3 hartjes');
+    els.partySticker.className = 'party-sticker sticker lvl-' + level;
+    els.partySticker.innerHTML = pick.s + '<span class="badge">' + STARS[level] + '</span>';
+    els.partySticker.setAttribute('aria-label', pick.s + ', sticker voor ' + LEVEL_ADJ[level] + ' puzzel');
+    $('party-sticker-text').innerHTML = (pick.isNew ? '<span class="party-new">Nieuw!</span> ' : '') +
+      'Een ' + STARS[level] + '-sticker voor een ' + LEVEL_ADJ[level] + ' puzzel:';
     els.party.hidden = false;
     $('again').focus();
     confetti();
   }
 
+  // Kies een sticker die je nog niet hebt. Heb je ze allemaal, dan de sticker
+  // die je het minst vaak hebt (en nooit dezelfde als de vorige keer).
+  function pickSticker(level) {
+    const pool = STICKER_SETS[level];
+    const count = {};
+    stickers.forEach(function (x) { if (x.level === level) count[x.s] = (count[x.s] || 0) + 1; });
+    const last = stickers.length ? stickers[stickers.length - 1].s : null;
+    let min = Infinity;
+    pool.forEach(function (s) { if (s !== last) min = Math.min(min, count[s] || 0); });
+    const options = pool.filter(function (s) { return s !== last && (count[s] || 0) === min; });
+    const s = options[Math.floor(Math.random() * options.length)];
+    return { s: s, isNew: !count[s] };
+  }
+
   function renderStickers(fresh) {
-    els.stickerGrid.innerHTML = stickers.map(function (s, k) {
-      return '<span class="sticker' + (fresh && k === stickers.length - 1 ? ' new' : '') + '">' + s + '</span>';
-    }).join('');
-    els.stickerEmpty.hidden = stickers.length > 0;
+    const latest = fresh ? stickers[stickers.length - 1] : null;
+    const groups = ['moeilijk', 'gemiddeld', 'makkelijk', null];
+    let html = '';
+    groups.forEach(function (level) {
+      const mine = stickers.filter(function (x) { return x.level === level; });
+      if (level === null && !mine.length) return;
+      const cls = level ? 'lvl-' + level : 'lvl-oud';
+      // Elke sticker één keer tonen, met een getal als je hem vaker hebt.
+      const seen = {};
+      const order = [];
+      mine.forEach(function (x) { if (!seen[x.s]) { seen[x.s] = 0; order.push(x.s); } seen[x.s]++; });
+      const total = level ? STICKER_SETS[level].length : order.length;
+      html += '<div class="sticker-level ' + cls + '">';
+      html += '<p class="sticker-head">' + (level ? '<span class="lvl-stars">' + STARS[level] + '</span> ' + LEVEL_NAMES[level] : 'Eerdere stickers') +
+        (level ? '<span class="tally">' + order.length + ' van de ' + total + '</span>' : '') + '</p>';
+      if (level) html += '<div class="sticker-meter" aria-hidden="true"><i style="width: ' + (order.length / total * 100).toFixed(1) + '%"></i></div>';
+      html += '<div class="sticker-grid">';
+      order.forEach(function (s) {
+        const isNew = latest && latest.level === level && latest.s === s;
+        html += '<span class="sticker ' + cls + (isNew ? ' new' : '') + '" title="' + (level ? LEVEL_NAMES[level] : 'Eerder verdiend') + '">' + s +
+          (level ? '<span class="badge">' + STARS[level] + '</span>' : '') +
+          (seen[s] > 1 ? '<span class="count">×' + seen[s] + '</span>' : '') + '</span>';
+      });
+      if (level && order.length < total) html += '<span class="sticker slot ' + cls + '" aria-hidden="true">?</span>';
+      html += '</div>';
+      if (level && !order.length) html += '<p class="empty-note">Los een ' + STARS[level] + ' puzzel op voor je eerste ' + LEVEL_NAMES[level].toLowerCase() + ' sticker.</p>';
+      html += '</div>';
+    });
+    $('sticker-book').innerHTML = html;
     $('sticker-title').textContent = stickers.length ? 'Mijn stickerboek (' + stickers.length + ')' : 'Mijn stickerboek';
   }
 
@@ -1016,7 +1123,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   // ------------------------------------------------------------ start
   function boot(data) {
     const snap = data && data.game ? data : null;
-    if (snap && Array.isArray(snap.stickers)) stickers = snap.stickers;
+    if (snap && Array.isArray(snap.stickers)) stickers = normalizeStickers(snap.stickers);
     if (snap && snap.settings) Object.assign(settings, snap.settings);
     buildThemeChoices();
     syncChoices();

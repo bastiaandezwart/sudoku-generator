@@ -413,21 +413,62 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
 .page.flipped { transform: rotateY(-180deg); pointer-events: none; }
 .page.flipped::after { opacity: 1; }
 .page.cover {
-  background: radial-gradient(circle, rgb(255 255 255 / 0.18) 2px, transparent 2.5px) 0 0 / 22px 22px, linear-gradient(140deg, var(--pink), var(--lilac));
-  color: #fff;
+  padding: 0;
+  overflow: hidden;
   cursor: pointer;
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  text-align: center;
-  gap: 8px;
+  min-height: 340px;
+  background: #ffd9ee;
 }
-.cover-title { margin: 0; font-size: 2.2rem; font-weight: 700; line-height: 1; text-shadow: 0 3px 0 rgb(58 43 92 / 0.25); }
-.cover-art { position: relative; width: 100%; max-width: 300px; height: 150px; }
-.cover-art .sticker { position: absolute; width: 68px; font-size: 2.1rem; }
-.cover-empty { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--emoji); font-size: 3.5rem; opacity: 0.85; }
-.cover-count { margin: 0; font-weight: 500; }
-.cover-hint { font-weight: 600; background: rgb(255 255 255 / 0.25); padding: 4px 14px; border-radius: 999px; }
+.cover-scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.cover-ribbon {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-2deg);
+  margin: 0;
+  padding: 7px 34px 9px;
+  background: linear-gradient(180deg, #ff6fae, var(--pink));
+  color: #fff;
+  font-size: clamp(1.45rem, 6.5vw, 2rem);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow: 0 2px 0 rgb(160 30 90 / 0.45);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 50%, 100% 100%, 0 100%, 14px 50%);
+  filter: drop-shadow(0 3px 0 rgb(58 43 92 / 0.2));
+}
+.cover-panel {
+  position: absolute;
+  left: 22px;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 18px;
+  background: rgb(255 255 255 / 0.85);
+  color: var(--ink);
+  box-shadow: 0 3px 0 rgb(58 43 92 / 0.12);
+}
+.cover-recent { display: flex; flex: none; }
+.cover-recent .sticker { width: 34px; font-size: 1.05rem; border-width: 2px; margin-right: -8px; }
+.cover-recent .sticker:nth-child(odd) { transform: rotate(-8deg); }
+.cover-recent .sticker:nth-child(even) { transform: rotate(7deg); }
+.cover-recent .sticker .badge { display: none; }
+.cover-text { display: grid; min-width: 0; margin-left: 6px; line-height: 1.2; }
+.cover-count { font-weight: 600; font-size: 0.95rem; }
+.cover-hint { font-size: 0.85rem; font-weight: 500; color: var(--pink); animation: nudge 1.6s ease-in-out infinite; }
+@keyframes nudge { 50% { transform: translateX(4px); } }
+.cv-cloud { animation: drift 7s ease-in-out infinite alternate; }
+.cv-cloud.two { animation-duration: 9s; animation-direction: alternate-reverse; }
+@keyframes drift { to { transform: translateX(7px); } }
+.cv-spark { transform-box: fill-box; transform-origin: center; animation: twinkle 2.4s ease-in-out infinite; }
+@keyframes twinkle { 0%, 100% { transform: scale(0.5); opacity: 0.4; } 50% { transform: scale(1.15); opacity: 1; } }
+.cv-flag { transform-box: fill-box; transform-origin: left center; animation: wave 1.4s ease-in-out infinite alternate; }
+@keyframes wave { to { transform: skewY(-10deg) scaleX(0.88); } }
+.cv-heart { transform-box: fill-box; transform-origin: center; animation: float 3s ease-in-out infinite; }
+@keyframes float { 50% { transform: translateY(-5px); } }
 .page-head { display: flex; align-items: baseline; gap: 8px; margin: 0 0 14px; font-weight: 700; font-size: 1.15rem; }
 .page-head .lvl-stars { color: var(--lvl); letter-spacing: 0.03em; }
 .page-head .tally { margin-left: auto; font-size: 0.85rem; font-weight: 500; color: var(--muted); }
@@ -1174,18 +1215,103 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     });
   }
 
+  // ---- kaft: regenboog, kasteel en prinsessen (getekend als SVG)
+  function princess(x, y, o) {
+    const wand = o.wand
+      ? '<line x1="11" y1="-26" x2="21" y2="-44" stroke="#fff" stroke-width="2" stroke-linecap="round"/>' +
+        '<path class="cv-spark" d="M21 -51 L23 -46 L28 -45 L24 -42 L25 -37 L21 -40 L17 -37 L18 -42 L14 -45 L19 -46 Z" fill="#ffd43b" stroke="#f0a800" stroke-width=".6"/>'
+      : '';
+    const leftArm = o.wave ? 'M-6 -38 L-15 -50' : 'M-6 -38 L-11 -26';
+    const leftHand = o.wave ? '-15.5" cy="-51' : '-11.5" cy="-25';
+    return '<g transform="translate(' + x + ' ' + y + ') scale(' + o.scale + ')">' +
+      '<ellipse cx="0" cy="1" rx="20" ry="3.5" fill="rgb(40 90 60 / .18)"/>' +
+      '<path d="M-12 -58 Q-17 -38 -12 -27 L12 -27 Q17 -38 12 -58 Z" fill="' + o.hair + '"/>' +
+      '<path d="M-21 0 Q-18 -17 -8 -31 L8 -31 Q18 -17 21 0 Q0 4 -21 0 Z" fill="' + o.dress + '"/>' +
+      '<path d="M-21 0 Q-17 -4 -13 0 Q-9 -4 -5 0 Q-1 -4 3 0 Q7 -4 11 0 Q15 -4 21 0 Q0 5 -21 0 Z" fill="' + o.light + '"/>' +
+      '<circle cx="-8" cy="-12" r="1.4" fill="' + o.light + '"/><circle cx="6" cy="-17" r="1.4" fill="' + o.light + '"/><circle cx="9" cy="-6" r="1.4" fill="' + o.light + '"/>' +
+      '<path d="M-7 -41 L7 -41 L8.5 -30 L-8.5 -30 Z" fill="' + o.light + '"/>' +
+      '<rect x="-9" y="-32" width="18" height="3.5" rx="1.75" fill="' + o.dress + '"/>' +
+      '<path d="' + leftArm + '" stroke="' + o.skin + '" stroke-width="3.6" stroke-linecap="round"/>' +
+      '<path d="M6 -38 L11 -26" stroke="' + o.skin + '" stroke-width="3.6" stroke-linecap="round"/>' +
+      '<circle cx="' + leftHand + '" r="2.3" fill="' + o.skin + '"/><circle cx="11.5" cy="-25" r="2.3" fill="' + o.skin + '"/>' +
+      wand +
+      '<rect x="-2.2" y="-43.5" width="4.4" height="4" fill="' + o.skin + '"/>' +
+      '<circle cx="0" cy="-51" r="10" fill="' + o.skin + '"/>' +
+      '<path d="M-10.6 -52 Q-10 -63 0 -62 Q10 -63 10.6 -52 Q7 -58 2 -56 Q-3 -59 -10.6 -52 Z" fill="' + o.hair + '"/>' +
+      '<path d="M-7.5 -60 L-8 -67 L-4 -63 L0 -69 L4 -63 L8 -67 L7.5 -60 Z" fill="#ffd43b" stroke="#e9a400" stroke-width=".7" stroke-linejoin="round"/>' +
+      '<circle cx="0" cy="-64.5" r="1.2" fill="#ff4f9a"/>' +
+      '<circle cx="-3.6" cy="-50.5" r="1.3" fill="#3a2b5c"/><circle cx="3.6" cy="-50.5" r="1.3" fill="#3a2b5c"/>' +
+      '<circle cx="-6.2" cy="-47" r="1.9" fill="#ff8fb1" opacity=".65"/><circle cx="6.2" cy="-47" r="1.9" fill="#ff8fb1" opacity=".65"/>' +
+      '<path d="M-2.8 -46.2 Q0 -43.6 2.8 -46.2" stroke="#3a2b5c" stroke-width="1.1" fill="none" stroke-linecap="round"/>' +
+      '</g>';
+  }
+  function cloud(x, y, sc, cls) {
+    return '<g class="cv-cloud ' + (cls || '') + '"><g transform="translate(' + x + ' ' + y + ') scale(' + sc + ')" fill="#fff">' +
+      '<circle cx="-18" cy="0" r="13"/><circle cx="0" cy="-8" r="17"/><circle cx="19" cy="-1" r="13"/><rect x="-30" y="0" width="60" height="12" rx="6"/></g></g>';
+  }
+  function spark(x, y, r, delay, color) {
+    return '<path class="cv-spark" style="animation-delay: ' + delay + 's" d="M' + x + ' ' + (y - r) + ' Q' + x + ' ' + y + ' ' + (x + r) + ' ' + y +
+      ' Q' + x + ' ' + y + ' ' + x + ' ' + (y + r) + ' Q' + x + ' ' + y + ' ' + (x - r) + ' ' + y + ' Q' + x + ' ' + y + ' ' + x + ' ' + (y - r) + ' Z" fill="' + color + '"/>';
+  }
+  function heart(x, y, sc, color, delay) {
+    return '<path class="cv-heart" style="animation-delay: ' + delay + 's" transform="translate(' + x + ' ' + y + ') scale(' + sc + ')" d="M0 3 C-6 -2 -5 -7 -2.5 -7 C-1 -7 0 -6 0 -5 C0 -6 1 -7 2.5 -7 C5 -7 6 -2 0 3 Z" fill="' + color + '"/>';
+  }
+  function coverScene() {
+    const bows = ['#ff6b8b', '#ffa94d', '#ffd43b', '#69db7c', '#4dabf7', '#b197fc'];
+    let rainbow = '';
+    bows.forEach(function (c, k) {
+      const r = 132 - k * 12;
+      rainbow += '<path d="M' + (150 - r) + ' 248 A' + r + ' ' + r + ' 0 0 1 ' + (150 + r) + ' 248" stroke="' + c + '" stroke-width="12.5" fill="none"/>';
+    });
+    const tower = function (x, w, top, roofTop, roof) {
+      return '<rect x="' + x + '" y="' + top + '" width="' + w + '" height="' + (296 - top) + '" fill="#ffb8d9"/>' +
+        '<polygon points="' + (x - 5) + ',' + (top + 2) + ' ' + (x + w + 5) + ',' + (top + 2) + ' ' + (x + w / 2) + ',' + roofTop + '" fill="' + roof + '"/>' +
+        '<circle cx="' + (x + w / 2) + '" cy="' + roofTop + '" r="2.6" fill="#ffd43b"/>' +
+        '<path d="M' + (x + w / 2 - 4) + ' ' + (top + 26) + ' v-6 a4 4 0 0 1 8 0 v6 Z" fill="#fff3b0" stroke="#d9579a" stroke-width="1"/>';
+    };
+    let crenels = '';
+    for (let cx = 100; cx < 200; cx += 12.5) crenels += '<rect x="' + cx + '" y="222" width="8" height="9" fill="#ffc9e3"/>';
+    let flowers = '';
+    [[22, 340, '#ff8fc8'], [70, 362, '#ffd43b'], [118, 348, '#fff'], [205, 352, '#ff8fc8'], [262, 338, '#ffd43b'], [282, 372, '#fff'], [40, 380, '#b197fc'], [236, 384, '#ff6b8b']].forEach(function (f) {
+      flowers += '<g transform="translate(' + f[0] + ' ' + f[1] + ')"><circle cx="-2.6" cy="0" r="2.4" fill="' + f[2] + '"/><circle cx="2.6" cy="0" r="2.4" fill="' + f[2] + '"/><circle cx="0" cy="-2.6" r="2.4" fill="' + f[2] + '"/><circle cx="0" cy="2.6" r="2.4" fill="' + f[2] + '"/><circle r="1.6" fill="#ffa94d"/></g>';
+    });
+    return '<svg class="cover-scene" viewBox="0 0 300 400" preserveAspectRatio="xMidYMax slice" aria-hidden="true">' +
+      '<defs><linearGradient id="cv-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc6e5"/><stop offset=".55" stop-color="#e6dcff"/><stop offset="1" stop-color="#cdeBff"/></linearGradient></defs>' +
+      '<rect width="300" height="400" fill="url(#cv-sky)"/>' +
+      spark(34, 112, 6, 0, '#fff') + spark(262, 96, 7, 0.8, '#fff') + spark(222, 150, 4, 1.4, '#ffe066') + spark(70, 170, 4, 0.4, '#ffe066') + spark(150, 92, 5, 1.9, '#fff') + spark(282, 190, 4, 1.1, '#fff') + spark(14, 210, 4, 1.7, '#fff') +
+      rainbow +
+      cloud(26, 252, 1.05) + cloud(274, 250, 1.05, 'two') + cloud(118, 128, 0.55, 'two') +
+      '<path d="M0 278 Q70 250 150 274 T300 268 V400 H0 Z" fill="#a8e6c1"/>' +
+      tower(82, 30, 206, 164, '#a685ff') + tower(188, 30, 206, 164, '#a685ff') +
+      '<rect x="100" y="230" width="100" height="66" fill="#ffc9e3"/>' + crenels +
+      '<rect x="132" y="182" width="36" height="50" fill="#ffb8d9"/>' +
+      '<polygon points="126,184 174,184 150,128" fill="#8f6cff"/><circle cx="150" cy="128" r="3" fill="#ffd43b"/>' +
+      '<line x1="150" y1="126" x2="150" y2="104" stroke="#7a5bd6" stroke-width="1.6"/>' +
+      '<path class="cv-flag" d="M150 104 Q160 101 170 106 Q160 110 150 112 Z" fill="#ff4f9a"/>' +
+      '<path d="M150 214 C140 205 142 196 146.5 196 C148.5 196 150 198 150 199.5 C150 198 151.5 196 153.5 196 C158 196 160 205 150 214 Z" fill="#fff3b0" stroke="#d9579a" stroke-width="1"/>' +
+      '<path d="M112 262 v-8 a5 5 0 0 1 10 0 v8 Z M178 262 v-8 a5 5 0 0 1 10 0 v8 Z" fill="#fff3b0" stroke="#d9579a" stroke-width="1"/>' +
+      '<path d="M137 296 V276 a13 13 0 0 1 26 0 V296 Z" fill="#c4579a"/><circle cx="157" cy="285" r="1.4" fill="#ffd43b"/>' +
+      '<path d="M0 302 Q90 280 170 298 T300 294 V400 H0 Z" fill="#7fd8a4"/>' +
+      '<path d="M139 296 Q128 340 104 400 H196 Q172 340 161 296 Z" fill="#fff1c2"/>' +
+      flowers +
+      princess(56, 330, { scale: 1.25, dress: '#ff8fc8', light: '#ffd1e8', skin: '#f6cfb0', hair: '#f2c14e', wand: true }) +
+      princess(246, 332, { scale: 1.25, dress: '#9b8cff', light: '#e1dbff', skin: '#8d5a3b', hair: '#2b1a12', wave: true }) +
+      heart(92, 262, 1.2, '#ff6b8b', 0) + heart(212, 258, 1, '#ff8fc8', 1.2) + heart(268, 236, 0.8, '#ff6b8b', 0.6) +
+      '</svg>';
+  }
+
   function renderBook() {
     const placed = stickers.filter(function (x) { return x !== pendingSticker; });
-    const recent = placed.slice(-5).reverse();
-    const spots = [[6, 8, -12], [64, 2, 9], [36, 44, -4], [2, 76, 7], [68, 72, -8]];
+    const recent = placed.slice(-4).reverse();
     let html = '<div class="page cover" data-page="0" role="button" aria-label="Stickerboek openen">' +
-      '<p class="cover-title">Mijn<br>stickerboek</p><div class="cover-art" aria-hidden="true">' +
-      recent.map(function (x, k) {
-        return '<span class="sticker lvl-' + x.level + '" style="left: ' + spots[k][0] + '%; top: ' + spots[k][1] + 'px; transform: rotate(' + spots[k][2] + 'deg)">' + x.s + '</span>';
-      }).join('') +
-      (recent.length ? '' : '<span class="cover-empty">📒</span>') + '</div>' +
-      '<p class="cover-count">' + (placed.length ? placed.length + (placed.length === 1 ? ' sticker' : ' stickers') + ' verzameld' : 'Nog leeg. Los een puzzel op!') + '</p>' +
-      '<span class="cover-hint">Tik om te openen ›</span></div>';
+      coverScene() +
+      '<p class="cover-ribbon">Mijn stickerboek</p>' +
+      '<div class="cover-panel">' +
+      (recent.length ? '<span class="cover-recent" aria-hidden="true">' + recent.map(function (x) {
+        return '<span class="sticker lvl-' + x.level + '">' + x.s + '</span>';
+      }).join('') + '</span>' : '') +
+      '<span class="cover-text"><span class="cover-count">' + (placed.length ? placed.length + (placed.length === 1 ? ' sticker' : ' stickers') + ' verzameld' : 'Nog leeg. Los een puzzel op!') + '</span>' +
+      '<span class="cover-hint">Tik om te openen ›</span></span></div></div>';
     PAGES.slice(1).forEach(function (level, idx) {
       const pool = STICKER_SETS[level];
       const c = stickerCounts(level);

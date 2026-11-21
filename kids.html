@@ -295,18 +295,11 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
 .toggle .ico { font-family: var(--emoji); }
 
 /* --- stickerboek --- */
-.stickers h2 { margin: 0; font-size: 1.25rem; font-weight: 700; }
 .lvl-makkelijk { --lvl: var(--mint); --lvl-soft: var(--mint-soft); }
 .lvl-gemiddeld { --lvl: var(--sky); --lvl-soft: var(--sky-soft); }
 .lvl-moeilijk { --lvl: #e09a00; --lvl-soft: var(--sun-soft); }
-.lvl-oud { --lvl: var(--lilac); --lvl-soft: var(--lilac-soft); }
-.sticker-level { display: grid; gap: 8px; padding-top: 12px; border-top: 2px dashed var(--lilac-soft); }
-.sticker-head { margin: 0; display: flex; align-items: baseline; gap: 8px; font-weight: 600; }
-.sticker-head .lvl-stars { color: var(--lvl); letter-spacing: 0.04em; }
-.sticker-head .tally { margin-left: auto; font-size: 0.85rem; font-weight: 500; color: var(--muted); }
-.sticker-meter { height: 8px; border-radius: 4px; background: var(--lvl-soft); overflow: hidden; }
-.sticker-meter i { display: block; height: 100%; background: var(--lvl); border-radius: 4px; }
-.sticker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); gap: 14px 8px; padding-bottom: 4px; }
+.stickers { display: grid; gap: 10px; overflow-x: clip; padding-bottom: 6px; }
+.stickers h2 { margin: 0; font-size: 1.25rem; font-weight: 700; }
 .sticker {
   position: relative;
   aspect-ratio: 1;
@@ -318,7 +311,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   background: var(--lvl-soft);
   border: 3px solid var(--lvl);
   border-radius: 50%;
-  box-shadow: 0 2px 0 rgb(58 43 92 / 0.12);
+  box-shadow: 0 0 0 2px #fff, 0 3px 4px rgb(58 43 92 / 0.25);
 }
 .sticker.lvl-moeilijk { background: radial-gradient(circle at 30% 25%, #fff 0 18%, transparent 19%), var(--lvl-soft); }
 .sticker .badge {
@@ -350,8 +343,141 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   padding: 0 5px;
   border-radius: 8px;
 }
-.sticker.slot { border-style: dashed; background: transparent; box-shadow: none; opacity: 0.45; color: var(--lvl); font-family: var(--font); font-size: 1.1rem; font-weight: 700; }
-.sticker.new { animation: pop 0.6s ease-out; box-shadow: 0 0 0 4px var(--pink-soft); }
+
+/* het boekje: tabbladen, rug, stapel bladzijden en omslaande pagina's */
+.book-tabs { display: flex; gap: 6px; padding-left: 26px; margin-bottom: -10px; }
+.book-tab {
+  border: 0;
+  border-radius: 12px 12px 0 0;
+  padding: 6px 12px 14px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: var(--lvl-soft);
+  color: var(--ink);
+  transition: transform 0.15s;
+}
+.book-tab .lvl-stars { color: var(--lvl); letter-spacing: 0.03em; }
+.book-tab.tab-cover { --lvl: var(--pink); --lvl-soft: var(--pink-soft); }
+.book-tab[aria-current="true"] { background: var(--lvl); color: #fff; transform: translateY(-4px); }
+.book-tab[aria-current="true"] .lvl-stars { color: #fff; }
+.book {
+  position: relative;
+  margin: 0 10px 0 14px;
+  perspective: 1800px;
+  border-radius: 6px 18px 18px 6px;
+  box-shadow: 4px 4px 0 #ebe4f7, 8px 8px 0 #dcd1f0, 0 16px 24px rgb(58 43 92 / 0.2);
+  touch-action: pan-y;
+}
+.book::before {
+  content: "";
+  position: absolute;
+  left: -14px;
+  top: 0;
+  bottom: 0;
+  width: 18px;
+  border-radius: 9px 0 0 9px;
+  background: linear-gradient(90deg, #9c2f72, #d8478f 55%, #a8357a);
+}
+.pages { display: grid; position: relative; }
+.page {
+  grid-area: 1 / 1;
+  position: relative;
+  min-width: 0;
+  transform-origin: left center;
+  transition: transform 0.75s cubic-bezier(0.4, 0.1, 0.25, 1);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 4px 18px 18px 4px;
+  padding: 16px 14px 20px 24px;
+  background: radial-gradient(circle, rgb(143 108 255 / 0.13) 1.2px, transparent 1.7px) 0 0 / 18px 18px, #fff;
+}
+.page::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 26px;
+  border-radius: 4px 0 0 4px;
+  background: linear-gradient(90deg, rgb(58 43 92 / 0.14), transparent);
+  pointer-events: none;
+}
+.page::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgb(58 43 92 / 0.05), rgb(58 43 92 / 0.4));
+  opacity: 0;
+  transition: opacity 0.75s;
+  pointer-events: none;
+}
+.page.flipped { transform: rotateY(-180deg); pointer-events: none; }
+.page.flipped::after { opacity: 1; }
+.page.cover {
+  background: radial-gradient(circle, rgb(255 255 255 / 0.18) 2px, transparent 2.5px) 0 0 / 22px 22px, linear-gradient(140deg, var(--pink), var(--lilac));
+  color: #fff;
+  cursor: pointer;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+  gap: 8px;
+}
+.cover-title { margin: 0; font-size: 2.2rem; font-weight: 700; line-height: 1; text-shadow: 0 3px 0 rgb(58 43 92 / 0.25); }
+.cover-art { position: relative; width: 100%; max-width: 300px; height: 150px; }
+.cover-art .sticker { position: absolute; width: 68px; font-size: 2.1rem; }
+.cover-empty { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--emoji); font-size: 3.5rem; opacity: 0.85; }
+.cover-count { margin: 0; font-weight: 500; }
+.cover-hint { font-weight: 600; background: rgb(255 255 255 / 0.25); padding: 4px 14px; border-radius: 999px; }
+.page-head { display: flex; align-items: baseline; gap: 8px; margin: 0 0 14px; font-weight: 700; font-size: 1.15rem; }
+.page-head .lvl-stars { color: var(--lvl); letter-spacing: 0.03em; }
+.page-head .tally { margin-left: auto; font-size: 0.85rem; font-weight: 500; color: var(--muted); }
+.slots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px 10px; }
+.slot {
+  position: relative;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px dashed color-mix(in srgb, var(--lvl) 45%, transparent);
+  font-family: var(--emoji);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.slot .ghost { filter: grayscale(1) brightness(0); opacity: 0.1; }
+.slot > .sticker { position: absolute; inset: -3px; transform: rotate(var(--r, 0deg)); }
+.slot > .sticker.slap { animation: slap 0.5s cubic-bezier(0.3, 1.5, 0.5, 1); }
+@keyframes slap {
+  0% { transform: scale(1.6) rotate(var(--r, 0deg)); }
+  55% { transform: scale(0.88) rotate(var(--r, 0deg)); }
+  100% { transform: scale(1) rotate(var(--r, 0deg)); }
+}
+.book-controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+.page-btn {
+  border: 0;
+  width: 52px;
+  height: 46px;
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink);
+}
+.page-btn:disabled { opacity: 0.35; cursor: default; }
+.page-label { font-weight: 600; color: var(--muted); font-size: 0.95rem; text-align: center; }
+.book-after {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  text-align: center;
+  background: var(--mint-soft);
+  border-radius: 20px;
+  padding: 14px 16px;
+  font-weight: 600;
+}
+.book-after .big-btn { width: 100%; }
+.sticker.flyer { position: fixed; left: 0; top: 0; z-index: 40; margin: 0; pointer-events: none; }
 .empty-note { margin: 0; color: var(--muted); font-size: 0.95rem; }
 .grown-ups { margin: 0; font-size: 0.8rem; color: var(--muted); text-align: center; }
 .grown-ups a { color: var(--lilac); }
@@ -457,8 +583,17 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
 
   <section class="card stickers" aria-labelledby="sticker-title">
     <h2 id="sticker-title">Mijn stickerboek</h2>
-    <p class="empty-note">Elke puzzel geeft een nieuwe sticker. Hoe meer sterren, hoe bijzonderder de sticker!</p>
-    <div id="sticker-book"></div>
+    <div class="book-tabs" id="book-tabs"></div>
+    <div class="book" id="book"><div class="pages" id="pages"></div></div>
+    <div class="book-controls">
+      <button class="page-btn" type="button" id="page-prev" aria-label="Vorige bladzijde">‹</button>
+      <span class="page-label" id="page-label" aria-live="polite"></span>
+      <button class="page-btn" type="button" id="page-next" aria-label="Volgende bladzijde">›</button>
+    </div>
+    <div class="book-after" id="book-after" hidden>
+      <span id="book-after-text"></span>
+      <button class="big-btn green" type="button" id="book-next-puzzle">Nog een puzzel!</button>
+    </div>
   </section>
 
   <p class="grown-ups">Voor grote mensen: <a href="index.html">Sudokumaker</a> met cijfers, 9×9 en vier niveaus.</p>
@@ -472,7 +607,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     <p id="party-sticker-text">Je nieuwe sticker:</p>
     <div class="party-sticker sticker" id="party-sticker"></div>
     <div class="row">
-      <button class="big-btn green" type="button" id="again">Nog een puzzel!</button>
+      <button class="big-btn green" type="button" id="stick">Plak in mijn boek!</button>
       <button class="link-btn" type="button" id="close-party">Puzzel bekijken</button>
     </div>
   </div>
@@ -496,7 +631,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   const STICKER_SETS = {
     makkelijk: ['🐞', '🌻', '🍦', '🎈', '🐢', '🐝', '🌷', '🍀', '🐣', '🍓', '🌼', '🐌', '🦔', '🍎', '🧸', '🐥', '🌱', '🍉', '🐟', '🦆', '🍄', '🐛', '🥕', '🌞', '🐸'],
     gemiddeld: ['🐳', '🐬', '🦒', '🐧', '🦜', '🐙', '🐨', '🦩', '🐠', '🦋', '🐼', '🦊', '🐰', '🍭', '🧁', '🍩', '🪁', '🎠', '🚲', '🎨', '🦦', '🐿️', '🍪', '🎀', '🛼'],
-    moeilijk:  ['🦄', '👑', '💎', '🏆', '🌈', '🐉', '🚀', '🪐', '🦚', '🎆', '🧚', '🏰', '🌟', '🦁', '🐯', '🎡', '🪄', '🔮', '🐲', '🌋', '🎇', '🥇', '🦖', '🦓', '🌠'],
+    moeilijk:  ['🦄', '👑', '💎', '🏆', '🌈', '🐉', '🚀', '🪐', '🦚', '🛸', '🧚', '🏰', '🌟', '🦁', '🐯', '🎡', '🪄', '🔮', '🐲', '🌋', '🎩', '🥇', '🦖', '🦓', '🦅'],
   };
   const LEVEL_NAMES = { makkelijk: 'Makkelijk', gemiddeld: 'Gemiddeld', moeilijk: 'Moeilijk' };
   const LEVEL_ADJ = { makkelijk: 'makkelijke', gemiddeld: 'gemiddelde', moeilijk: 'moeilijke' };
@@ -517,13 +652,12 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   if (settings.size !== 4 && settings.size !== 6) settings.size = 4;
   if (['makkelijk', 'gemiddeld', 'moeilijk'].indexOf(settings.level) < 0) settings.level = 'makkelijk';
   let stickers = normalizeStickers(saved.stickers);
-  // Oude stickers (alleen een plaatje) krijgen het label "oud".
+  // Alleen stickers met een niveau blijven bewaard.
   function normalizeStickers(list) {
     if (!Array.isArray(list)) return [];
     return list.slice(-500).map(function (x) {
-      if (typeof x === 'string') return { s: x, level: null };
-      if (x && typeof x.s === 'string') return { s: x.s, level: STICKER_SETS[x.level] ? x.level : null, size: x.size, t: x.t };
-      return null;
+      if (x && typeof x.s === 'string' && STICKER_SETS[x.level]) return { s: x.s, level: x.level, size: x.size, t: x.t };
+      return null; // oude stickers zonder niveau worden opgeruimd
     }).filter(Boolean);
   }
 
@@ -563,6 +697,28 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     oops() { tone(330, 0.18, 'sine'); tone(247, 0.25, 'sine', 0.13); },
     hint() { tone(880, 0.12, 'sine'); tone(1320, 0.2, 'sine', 0.08); },
     erase() { tone(440, 0.08, 'triangle', 0, 0.08); },
+    swish() {
+      if (!settings.sound) return;
+      try {
+        actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+        const len = Math.floor(actx.sampleRate * 0.28);
+        const buf = actx.createBuffer(1, len, actx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * i / len) * 0.6;
+        const src = actx.createBufferSource();
+        src.buffer = buf;
+        const f = actx.createBiquadFilter();
+        f.type = 'bandpass';
+        const t = actx.currentTime;
+        f.frequency.setValueAtTime(900, t);
+        f.frequency.exponentialRampToValueAtTime(3200, t + 0.25);
+        const g = actx.createGain();
+        g.gain.value = 0.35;
+        src.connect(f).connect(g).connect(actx.destination);
+        src.start();
+      } catch (e) { /* geen geluid */ }
+    },
+    slap() { tone(140, 0.14, 'sine', 0, 0.22); tone(1100, 0.07, 'triangle', 0.02, 0.07); },
     shuffle() { [0, 0.05, 0.1, 0.15, 0.2, 0.25].forEach(function (w, k) { tone(520 + k * 80, 0.06, 'triangle', w, 0.06); }); },
     win() { [523, 659, 784, 1047, 1319].forEach(function (f, k) { tone(f, 0.3, 'triangle', k * 0.11, 0.14); }); },
   };
@@ -697,6 +853,8 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     if (dealing) return;
     dealing = true;
     els.party.hidden = true;
+    if (pendingSticker) { pendingSticker = null; renderBook(); }
+    $('book-after').hidden = true;
     const btn = $('new-game');
     btn.disabled = true;
     btn.textContent = 'Even schudden…';
@@ -950,9 +1108,11 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     const hearts = slips === 0 ? 3 : slips <= 3 ? 2 : 1;
     const level = STICKER_SETS[game.level] ? game.level : 'makkelijk';
     const pick = pickSticker(level);
-    stickers.push({ s: pick.s, level: level, size: game.size, t: Date.now() });
+    const entry = { s: pick.s, level: level, size: game.size, t: Date.now() };
+    stickers.push(entry);
+    pendingSticker = entry; // zit pas echt in het boek als hij geplakt is
     render();
-    renderStickers(true);
+    renderBook();
     persist();
     sounds.win();
     setBubble('Hoera, opgelost! Je verdiende een ' + STARS[level] + '-sticker.', 'yay');
@@ -964,7 +1124,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     $('party-sticker-text').innerHTML = (pick.isNew ? '<span class="party-new">Nieuw!</span> ' : '') +
       'Een ' + STARS[level] + '-sticker voor een ' + LEVEL_ADJ[level] + ' puzzel:';
     els.party.hidden = false;
-    $('again').focus();
+    $('stick').focus();
     confetti();
   }
 
@@ -982,38 +1142,182 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     return { s: s, isNew: !count[s] };
   }
 
-  function renderStickers(fresh) {
-    const latest = fresh ? stickers[stickers.length - 1] : null;
-    const groups = ['moeilijk', 'gemiddeld', 'makkelijk', null];
-    let html = '';
-    groups.forEach(function (level) {
-      const mine = stickers.filter(function (x) { return x.level === level; });
-      if (level === null && !mine.length) return;
-      const cls = level ? 'lvl-' + level : 'lvl-oud';
-      // Elke sticker één keer tonen, met een getal als je hem vaker hebt.
-      const seen = {};
-      const order = [];
-      mine.forEach(function (x) { if (!seen[x.s]) { seen[x.s] = 0; order.push(x.s); } seen[x.s]++; });
-      const total = level ? STICKER_SETS[level].length : order.length;
-      html += '<div class="sticker-level ' + cls + '">';
-      html += '<p class="sticker-head">' + (level ? '<span class="lvl-stars">' + STARS[level] + '</span> ' + LEVEL_NAMES[level] : 'Eerdere stickers') +
-        (level ? '<span class="tally">' + order.length + ' van de ' + total + '</span>' : '') + '</p>';
-      if (level) html += '<div class="sticker-meter" aria-hidden="true"><i style="width: ' + (order.length / total * 100).toFixed(1) + '%"></i></div>';
-      html += '<div class="sticker-grid">';
-      order.forEach(function (s) {
-        const isNew = latest && latest.level === level && latest.s === s;
-        html += '<span class="sticker ' + cls + (isNew ? ' new' : '') + '" title="' + (level ? LEVEL_NAMES[level] : 'Eerder verdiend') + '">' + s +
-          (level ? '<span class="badge">' + STARS[level] + '</span>' : '') +
-          (seen[s] > 1 ? '<span class="count">×' + seen[s] + '</span>' : '') + '</span>';
-      });
-      if (level && order.length < total) html += '<span class="sticker slot ' + cls + '" aria-hidden="true">?</span>';
-      html += '</div>';
-      if (level && !order.length) html += '<p class="empty-note">Los een ' + STARS[level] + ' puzzel op voor je eerste ' + LEVEL_NAMES[level].toLowerCase() + ' sticker.</p>';
-      html += '</div>';
-    });
-    $('sticker-book').innerHTML = html;
-    $('sticker-title').textContent = stickers.length ? 'Mijn stickerboek (' + stickers.length + ')' : 'Mijn stickerboek';
+  // ------------------------------------------------------------ stickerboek
+  const PAGES = ['kaft', 'makkelijk', 'gemiddeld', 'moeilijk'];
+  let bookPage = 0;
+  let pendingSticker = null;
+
+  function stickerCounts(level) {
+    const c = {};
+    stickers.forEach(function (x) { if (x.level === level && x !== pendingSticker) c[x.s] = (c[x.s] || 0) + 1; });
+    return c;
   }
+  function ownedCount(level) {
+    const c = stickerCounts(level);
+    return STICKER_SETS[level].filter(function (s) { return c[s] > 0; }).length;
+  }
+  function tilt(k) { return ((k * 37) % 11) - 5; }
+  function stickerHtml(level, s, count, r) {
+    return '<span class="sticker lvl-' + level + '" style="--r: ' + r + 'deg">' + s +
+      '<span class="badge">' + STARS[level] + '</span>' +
+      (count > 1 ? '<span class="count">×' + count + '</span>' : '') + '</span>';
+  }
+
+  function buildTabs() {
+    $('book-tabs').innerHTML = PAGES.map(function (p, i) {
+      return i === 0
+        ? '<button type="button" class="book-tab tab-cover" data-page="0">Kaft</button>'
+        : '<button type="button" class="book-tab lvl-' + p + '" data-page="' + i + '" aria-label="Bladzijde ' + LEVEL_NAMES[p] + '"><span class="lvl-stars">' + STARS[p] + '</span></button>';
+    }).join('');
+    $('book-tabs').querySelectorAll('.book-tab').forEach(function (b) {
+      b.addEventListener('click', function () { flipTo(Number(b.dataset.page)); });
+    });
+  }
+
+  function renderBook() {
+    const placed = stickers.filter(function (x) { return x !== pendingSticker; });
+    const recent = placed.slice(-5).reverse();
+    const spots = [[6, 8, -12], [64, 2, 9], [36, 44, -4], [2, 76, 7], [68, 72, -8]];
+    let html = '<div class="page cover" data-page="0" role="button" aria-label="Stickerboek openen">' +
+      '<p class="cover-title">Mijn<br>stickerboek</p><div class="cover-art" aria-hidden="true">' +
+      recent.map(function (x, k) {
+        return '<span class="sticker lvl-' + x.level + '" style="left: ' + spots[k][0] + '%; top: ' + spots[k][1] + 'px; transform: rotate(' + spots[k][2] + 'deg)">' + x.s + '</span>';
+      }).join('') +
+      (recent.length ? '' : '<span class="cover-empty">📒</span>') + '</div>' +
+      '<p class="cover-count">' + (placed.length ? placed.length + (placed.length === 1 ? ' sticker' : ' stickers') + ' verzameld' : 'Nog leeg. Los een puzzel op!') + '</p>' +
+      '<span class="cover-hint">Tik om te openen ›</span></div>';
+    PAGES.slice(1).forEach(function (level, idx) {
+      const pool = STICKER_SETS[level];
+      const c = stickerCounts(level);
+      html += '<div class="page lvl-' + level + '" data-page="' + (idx + 1) + '">' +
+        '<p class="page-head"><span class="lvl-stars">' + STARS[level] + '</span> ' + LEVEL_NAMES[level] +
+        '<span class="tally">' + ownedCount(level) + ' van de ' + pool.length + '</span></p><div class="slots">';
+      pool.forEach(function (s, k) {
+        html += '<span class="slot" data-s="' + s + '">' +
+          (c[s] > 0 ? stickerHtml(level, s, c[s], tilt(k)) : '<span class="ghost" aria-hidden="true">' + s + '</span>') + '</span>';
+      });
+      html += '</div></div>';
+    });
+    $('pages').innerHTML = html;
+    $('pages').querySelector('.cover').addEventListener('click', function () { flipTo(1); });
+    $('sticker-title').textContent = placed.length ? 'Mijn stickerboek (' + placed.length + ')' : 'Mijn stickerboek';
+    applyPages();
+  }
+
+  function applyPages() {
+    $('pages').querySelectorAll('.page').forEach(function (p) {
+      const i = Number(p.dataset.page);
+      p.style.zIndex = PAGES.length - i;
+      p.classList.toggle('flipped', i < bookPage);
+      p.setAttribute('aria-hidden', i === bookPage ? 'false' : 'true');
+      p.inert = i !== bookPage;
+    });
+    $('book-tabs').querySelectorAll('.book-tab').forEach(function (b) {
+      b.setAttribute('aria-current', Number(b.dataset.page) === bookPage ? 'true' : 'false');
+    });
+    $('page-prev').disabled = bookPage === 0;
+    $('page-next').disabled = bookPage === PAGES.length - 1;
+    const level = PAGES[bookPage];
+    $('page-label').textContent = bookPage === 0 ? 'Kaft' : LEVEL_NAMES[level] + ' · ' + ownedCount(level) + ' van de ' + STICKER_SETS[level].length;
+  }
+
+  let flipping = null;
+  function flipTo(target) {
+    target = Math.max(0, Math.min(PAGES.length - 1, target));
+    if (target === bookPage) return Promise.resolve();
+    if (reduceMotion()) { bookPage = target; applyPages(); return Promise.resolve(); }
+    const dir = target > bookPage ? 1 : -1;
+    let steps = Math.abs(target - bookPage);
+    clearTimeout(flipping);
+    return new Promise(function (resolve) {
+      (function step() {
+        bookPage += dir;
+        applyPages();
+        sounds.swish();
+        steps--;
+        flipping = setTimeout(steps > 0 ? step : resolve, steps > 0 ? 140 : 780);
+      })();
+    });
+  }
+
+  // Na het oplossen: de sticker vliegt naar zijn plekje in het boek.
+  function stickIt() {
+    const entry = pendingSticker;
+    if (!entry) { closeParty(); return; }
+    const from = els.partySticker.getBoundingClientRect();
+    els.party.hidden = true;
+    const flyer = document.createElement('span');
+    flyer.className = 'sticker flyer lvl-' + entry.level;
+    flyer.innerHTML = entry.s + '<span class="badge">' + STARS[entry.level] + '</span>';
+    flyer.style.width = from.width + 'px';
+    flyer.style.height = from.height + 'px';
+    flyer.style.fontSize = (from.width * 0.48) + 'px';
+    flyer.style.left = from.left + 'px';
+    flyer.style.top = from.top + 'px';
+    const fast = reduceMotion();
+    if (!fast) document.body.appendChild(flyer);
+    const hover = fast ? null : flyer.animate(
+      [{ transform: 'translateY(0) rotate(-5deg)' }, { transform: 'translateY(-10px) rotate(5deg)' }],
+      { duration: 450, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out' });
+    setBubble('Waar hoort deze sticker? Even zoeken in je boek…');
+    $('book').scrollIntoView({ behavior: fast ? 'auto' : 'smooth', block: 'center' });
+    setTimeout(function () {
+      flipTo(PAGES.indexOf(entry.level)).then(function () {
+        const slot = $('pages').querySelector('.page[data-page="' + PAGES.indexOf(entry.level) + '"] .slot[data-s="' + entry.s + '"]');
+        if (fast || !slot) { land(); return; }
+        const to = slot.getBoundingClientRect();
+        if (hover) hover.cancel();
+        const dx = to.left + to.width / 2 - (from.left + from.width / 2);
+        const dy = to.top + to.height / 2 - (from.top + from.height / 2);
+        const sc = to.width / from.width;
+        const r = tilt(STICKER_SETS[entry.level].indexOf(entry.s));
+        const fly = flyer.animate([
+          { transform: 'translate(0, 0) scale(1) rotate(0deg)' },
+          { transform: 'translate(' + dx * 0.45 + 'px, ' + (dy * 0.45 - 70) + 'px) scale(' + (0.6 + sc) + ') rotate(16deg)', offset: 0.55 },
+          { transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(' + sc + ') rotate(' + r + 'deg)' },
+        ], { duration: 900, easing: 'cubic-bezier(0.5, 0, 0.3, 1)', fill: 'forwards' });
+        fly.onfinish = land;
+      });
+    }, fast ? 0 : 600);
+
+    function land() {
+      flyer.remove();
+      pendingSticker = null;
+      renderBook();
+      const st = $('pages').querySelector('.page[data-page="' + PAGES.indexOf(entry.level) + '"] .slot[data-s="' + entry.s + '"] .sticker');
+      if (st) st.classList.add('slap');
+      sounds.slap();
+      persist();
+      const left = STICKER_SETS[entry.level].length - ownedCount(entry.level);
+      const msg = 'Geplakt! ' + (left
+        ? 'Nog ' + left + ' ' + STARS[entry.level] + '-stickers te verzamelen.'
+        : 'Je ' + STARS[entry.level] + '-bladzijde is helemaal vol!');
+      $('book-after-text').textContent = msg;
+      $('book-after').hidden = false;
+      setBubble(msg, 'yay');
+    }
+  }
+
+  function closeParty() {
+    els.party.hidden = true;
+    if (pendingSticker) { pendingSticker = null; renderBook(); persist(); }
+    setBubble('Je sticker zit in je stickerboek.<span class="ask"><button class="mini-btn" type="button" id="owl-next">Nog een puzzel!</button></span>', 'yay');
+    $('owl-next').addEventListener('click', dealNew);
+  }
+
+  (function setupBook() {
+    $('page-prev').addEventListener('click', function () { flipTo(bookPage - 1); });
+    $('page-next').addEventListener('click', function () { flipTo(bookPage + 1); });
+    $('book-next-puzzle').addEventListener('click', dealNew);
+    let startX = null;
+    $('book').addEventListener('pointerdown', function (e) { startX = e.clientX; });
+    $('book').addEventListener('pointerup', function (e) {
+      if (startX === null) return;
+      const dx = e.clientX - startX;
+      startX = null;
+      if (Math.abs(dx) > 40) flipTo(bookPage + (dx < 0 ? 1 : -1));
+    });
+  })();
 
   function disarmReset() {
     clearTimeout(resetArmed);
@@ -1084,8 +1388,8 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
 
   // ------------------------------------------------------------ knoppen
   $('new-game').addEventListener('click', function () { requestNew(settings.size, settings.level); });
-  $('again').addEventListener('click', dealNew);
-  $('close-party').addEventListener('click', function () { els.party.hidden = true; });
+  $('stick').addEventListener('click', stickIt);
+  $('close-party').addEventListener('click', closeParty);
   $('hint').addEventListener('click', hint);
   els.reset.addEventListener('click', reset);
   els.sound.addEventListener('click', function () { settings.sound = !settings.sound; syncChoices(); persist(); if (settings.sound) sounds.pop(); });
@@ -1099,7 +1403,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
 
   document.addEventListener('keydown', function (e) {
     if (!game || e.ctrlKey || e.metaKey || e.altKey) return;
-    if (!els.party.hidden) { if (e.key === 'Escape') els.party.hidden = true; return; }
+    if (!els.party.hidden) { if (e.key === 'Escape') closeParty(); return; }
     const size = game.size;
     const d = Number(e.key);
     if (Number.isInteger(d) && d >= 1 && d <= size) {
@@ -1127,7 +1431,8 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     if (snap && snap.settings) Object.assign(settings, snap.settings);
     buildThemeChoices();
     syncChoices();
-    renderStickers(false);
+    buildTabs();
+    renderBook();
     const restore = (snap && snap.game) || saved.game;
     const parsed = restore && S.parseCode(restore.code);
     if (parsed && (parsed.size === 4 || parsed.size === 6)) startGame(parsed.size, parsed.level, parsed.seed, restore);

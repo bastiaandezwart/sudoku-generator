@@ -24,8 +24,8 @@ Open `kids.html` voor een versie voor kinderen van 5 tot 8 jaar:
 - Een uiltje legt uit wat er mis is ("Er staat al een 🐱 in deze rij") en moedigt aan.
 - **Help mij** legt een goed plaatje neer, het liefst op een plek waar maar één plaatje past.
 - Na het oplossen: confetti, 1 tot 3 hartjes (minder fouten en hulp = meer hartjes) en een sticker voor in het stickerboek.
-- Elk niveau heeft een eigen set van 25 stickers, met een eigen kleur en sterren op de sticker: groen ★, blauw ★★, goud ★★★. Je krijgt pas een sticker dubbel als je de hele set hebt.
-- Het stickerboek is een boekje met een kaft en een bladzijde per niveau. Je bladert met de pijltjes, de tabbladen of door te vegen. Op elk plekje zie je vaag de schaduw van de sticker die daar hoort. Na het oplossen tik je op **Plak in mijn boek!**: het boekje bladert naar de goede bladzijde en de sticker vliegt naar zijn plekje.
+- Elke grootte en elk niveau heeft een eigen set van 25 stickers. De kleur en de sterren tonen het niveau (groen ★, blauw ★★, goud ★★★), de vorm toont de grootte: 4×4-stickers zijn rond, 6×6-stickers vierkant met ronde hoeken. Je krijgt pas een sticker dubbel als je de hele set hebt.
+- Het stickerboek is een boekje met een kaft en zes bladzijden: 4×4 en 6×6, elk met ★, ★★ en ★★★. Met het knopje 4×4 | 6×6 wissel je van deel. Je bladert met de pijltjes, de tabbladen of door te vegen. Op elk plekje zie je vaag de schaduw van de sticker die daar hoort. Na het oplossen tik je op **Plak in mijn boek!**: het boekje bladert naar de goede bladzijde en de sticker vliegt naar zijn plekje.
 - Geen timer. Het geluid en het meteen tonen van fouten kun je uitzetten.
 
 ## Roosters

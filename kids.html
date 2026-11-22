@@ -313,6 +313,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   border-radius: 50%;
   box-shadow: 0 0 0 2px #fff, 0 3px 4px rgb(58 43 92 / 0.25);
 }
+.sticker.size-6 { border-radius: 28%; }
 .sticker.lvl-moeilijk { background: radial-gradient(circle at 30% 25%, #fff 0 18%, transparent 19%), var(--lvl-soft); }
 .sticker .badge {
   position: absolute;
@@ -345,6 +346,24 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
 }
 
 /* het boekje: tabbladen, rug, stapel bladzijden en omslaande pagina's */
+.book-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.book-sizes { display: flex; gap: 4px; padding: 4px; background: var(--lilac-soft); border-radius: 14px; }
+.book-sizes button {
+  border: 0;
+  border-radius: 10px;
+  padding: 5px 10px;
+  background: transparent;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+}
+.book-sizes button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 2px 0 rgb(58 43 92 / 0.12); }
+.mini-grid { display: inline-block; width: 14px; height: 14px; border: 2.5px solid currentColor; background: var(--lilac-soft); }
+.mini-grid.g4 { border-radius: 50%; }
+.mini-grid.g6 { border-radius: 28%; }
 .book-tabs { display: flex; gap: 6px; padding-left: 26px; margin-bottom: -10px; }
 .book-tab {
   border: 0;
@@ -471,6 +490,9 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
 @keyframes float { 50% { transform: translateY(-5px); } }
 .page-head { display: flex; align-items: baseline; gap: 8px; margin: 0 0 14px; font-weight: 700; font-size: 1.15rem; }
 .page-head .lvl-stars { color: var(--lvl); letter-spacing: 0.03em; }
+.size-chip { align-self: center; font-size: 0.75rem; font-weight: 700; color: #fff; background: var(--lilac); border-radius: 8px; padding: 1px 7px; }
+.page.size-6 .slot { border-radius: 28%; }
+.page.size-6 { background: radial-gradient(circle, rgb(143 108 255 / 0.13) 1.2px, transparent 1.7px) 0 0 / 18px 18px, #fbf9ff; }
 .page-head .tally { margin-left: auto; font-size: 0.85rem; font-weight: 500; color: var(--muted); }
 .slots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px 10px; }
 .slot {
@@ -623,7 +645,13 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   </div>
 
   <section class="card stickers" aria-labelledby="sticker-title">
-    <h2 id="sticker-title">Mijn stickerboek</h2>
+    <div class="book-top">
+      <h2 id="sticker-title">Mijn stickerboek</h2>
+      <div class="book-sizes" id="book-sizes" role="group" aria-label="Deel van het boek">
+        <button type="button" data-size="4" aria-label="4 bij 4 stickers"><span class="mini-grid g4" aria-hidden="true"></span>4×4</button>
+        <button type="button" data-size="6" aria-label="6 bij 6 stickers"><span class="mini-grid g6" aria-hidden="true"></span>6×6</button>
+      </div>
+    </div>
     <div class="book-tabs" id="book-tabs"></div>
     <div class="book" id="book"><div class="pages" id="pages"></div></div>
     <div class="book-controls">
@@ -668,12 +696,18 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     sprookjes: { label: 'Sprookjes', symbols: ['🦄', '🌈', '🌙', '🌸', '👑', '🦋'], names: ['eenhoorn', 'regenboog', 'maan', 'bloem', 'kroon', 'vlinder'] },
     cijfers:   { label: 'Cijfers',   symbols: ['1', '2', '3', '4', '5', '6'], names: ['1', '2', '3', '4', '5', '6'], digits: true },
   };
-  // Elk niveau heeft zijn eigen stickers: hoe moeilijker, hoe bijzonderder.
+  // Elke grootte en elk niveau heeft zijn eigen stickers: hoe moeilijker, hoe bijzonderder.
+  // 4×4-stickers zijn rond, 6×6-stickers zijn vierkant met ronde hoeken.
   const STICKER_SETS = {
-    makkelijk: ['🐞', '🌻', '🍦', '🎈', '🐢', '🐝', '🌷', '🍀', '🐣', '🍓', '🌼', '🐌', '🦔', '🍎', '🧸', '🐥', '🌱', '🍉', '🐟', '🦆', '🍄', '🐛', '🥕', '🌞', '🐸'],
-    gemiddeld: ['🐳', '🐬', '🦒', '🐧', '🦜', '🐙', '🐨', '🦩', '🐠', '🦋', '🐼', '🦊', '🐰', '🍭', '🧁', '🍩', '🪁', '🎠', '🚲', '🎨', '🦦', '🐿️', '🍪', '🎀', '🛼'],
-    moeilijk:  ['🦄', '👑', '💎', '🏆', '🌈', '🐉', '🚀', '🪐', '🦚', '🛸', '🧚', '🏰', '🌟', '🦁', '🐯', '🎡', '🪄', '🔮', '🐲', '🌋', '🎩', '🥇', '🦖', '🦓', '🦅'],
+    '4-makkelijk': ['🐞', '🌻', '🍦', '🎈', '🐢', '🐝', '🌷', '🍀', '🐣', '🍓', '🌼', '🐌', '🦔', '🍎', '🧸', '🐥', '🌱', '🍉', '🐟', '🦆', '🍄', '🐛', '🥕', '🌞', '🐸'],
+    '4-gemiddeld': ['🐳', '🐬', '🦒', '🐧', '🦜', '🐙', '🐨', '🦩', '🐠', '🦋', '🐼', '🦊', '🐰', '🍭', '🧁', '🍩', '🪁', '🎠', '🚲', '🎨', '🦦', '🐿️', '🍪', '🎀', '🛼'],
+    '4-moeilijk':  ['🦄', '👑', '💎', '🏆', '🌈', '🐉', '🚀', '🪐', '🦚', '🛸', '🧚', '🏰', '🌟', '🦁', '🐯', '🎡', '🪄', '🔮', '🐲', '🌋', '🎩', '🥇', '🦖', '🦓', '🦅'],
+    '6-makkelijk': ['🍰', '🍬', '🍫', '🥨', '🧇', '🥞', '🍒', '🍇', '🍌', '🍑', '🥝', '🍍', '🍋', '🍐', '🥥', '🌽', '🥐', '🍿', '🍯', '🧀', '🍕', '🍔', '🌮', '🥧', '🍡'],
+    '6-gemiddeld': ['🐋', '🦈', '🦀', '🐡', '🦑', '🦞', '🐚', '🐊', '🐘', '🦛', '🦘', '🐒', '🦙', '🐄', '🐖', '🐑', '🐓', '🦉', '🦢', '🐇', '🐻', '🦌', '🐎', '🦥', '🦨'],
+    '6-moeilijk':  ['🌍', '🌙', '⭐', '💫', '🎁', '🎂', '🎉', '🏅', '🎯', '🎪', '🎻', '🎺', '🥁', '🎸', '🎹', '🚂', '🚁', '⛵', '🛷', '🧜', '🧞', '🧙', '🧝', '🦸', '💍'],
   };
+  const LEVELS3 = ['makkelijk', 'gemiddeld', 'moeilijk'];
+  function keyOf(x) { return x.size + '-' + x.level; }
   const LEVEL_NAMES = { makkelijk: 'Makkelijk', gemiddeld: 'Gemiddeld', moeilijk: 'Moeilijk' };
   const LEVEL_ADJ = { makkelijk: 'makkelijke', gemiddeld: 'gemiddelde', moeilijk: 'moeilijke' };
   const CHEERS = ['Goed zo!', 'Super!', 'Knap hoor!', 'Wauw!', 'Ga zo door!', 'Top!', 'Heel goed!', 'Jij kan dit!'];
@@ -693,12 +727,16 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   if (settings.size !== 4 && settings.size !== 6) settings.size = 4;
   if (['makkelijk', 'gemiddeld', 'moeilijk'].indexOf(settings.level) < 0) settings.level = 'makkelijk';
   let stickers = normalizeStickers(saved.stickers);
-  // Alleen stickers met een niveau blijven bewaard.
+  // Alleen stickers met een niveau blijven bewaard. Elke sticker komt op de
+  // bladzijde (grootte + niveau) waar hij in de set staat.
   function normalizeStickers(list) {
     if (!Array.isArray(list)) return [];
-    return list.slice(-500).map(function (x) {
-      if (x && typeof x.s === 'string' && STICKER_SETS[x.level]) return { s: x.s, level: x.level, size: x.size, t: x.t };
-      return null; // oude stickers zonder niveau worden opgeruimd
+    return list.slice(-1000).map(function (x) {
+      if (!x || typeof x.s !== 'string' || LEVELS3.indexOf(x.level) < 0) return null; // oude stickers zonder niveau worden opgeruimd
+      let size = x.size === 6 ? 6 : 4;
+      if (STICKER_SETS[size + '-' + x.level].indexOf(x.s) < 0) size = size === 6 ? 4 : 6;
+      if (STICKER_SETS[size + '-' + x.level].indexOf(x.s) < 0) return null;
+      return { s: x.s, level: x.level, size: size, t: x.t };
     }).filter(Boolean);
   }
 
@@ -1147,9 +1185,10 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     held = null;
     const slips = mistakes + hints;
     const hearts = slips === 0 ? 3 : slips <= 3 ? 2 : 1;
-    const level = STICKER_SETS[game.level] ? game.level : 'makkelijk';
-    const pick = pickSticker(level);
-    const entry = { s: pick.s, level: level, size: game.size, t: Date.now() };
+    const level = LEVELS3.indexOf(game.level) >= 0 ? game.level : 'makkelijk';
+    const size = game.size === 6 ? 6 : 4;
+    const pick = pickSticker(size + '-' + level);
+    const entry = { s: pick.s, level: level, size: size, t: Date.now() };
     stickers.push(entry);
     pendingSticker = entry; // zit pas echt in het boek als hij geplakt is
     render();
@@ -1159,11 +1198,11 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     setBubble('Hoera, opgelost! Je verdiende een ' + STARS[level] + '-sticker.', 'yay');
     els.partyStars.innerHTML = [1, 2, 3].map(function (k) { return '<span class="' + (k <= hearts ? '' : 'off') + '">♥</span>'; }).join('');
     els.partyStars.setAttribute('aria-label', hearts + ' van de 3 hartjes');
-    els.partySticker.className = 'party-sticker sticker lvl-' + level;
+    els.partySticker.className = 'party-sticker sticker lvl-' + level + ' size-' + size;
     els.partySticker.innerHTML = pick.s + '<span class="badge">' + STARS[level] + '</span>';
-    els.partySticker.setAttribute('aria-label', pick.s + ', sticker voor ' + LEVEL_ADJ[level] + ' puzzel');
+    els.partySticker.setAttribute('aria-label', pick.s + ', sticker voor een ' + LEVEL_ADJ[level] + ' ' + size + '×' + size + '-puzzel');
     $('party-sticker-text').innerHTML = (pick.isNew ? '<span class="party-new">Nieuw!</span> ' : '') +
-      'Een ' + STARS[level] + '-sticker voor een ' + LEVEL_ADJ[level] + ' puzzel:';
+      'Een ' + STARS[level] + '-sticker voor een ' + LEVEL_ADJ[level] + ' ' + size + '×' + size + '-puzzel:';
     els.party.hidden = false;
     $('stick').focus();
     confetti();
@@ -1171,10 +1210,10 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
 
   // Kies een sticker die je nog niet hebt. Heb je ze allemaal, dan de sticker
   // die je het minst vaak hebt (en nooit dezelfde als de vorige keer).
-  function pickSticker(level) {
-    const pool = STICKER_SETS[level];
+  function pickSticker(key) {
+    const pool = STICKER_SETS[key];
     const count = {};
-    stickers.forEach(function (x) { if (x.level === level) count[x.s] = (count[x.s] || 0) + 1; });
+    stickers.forEach(function (x) { if (keyOf(x) === key) count[x.s] = (count[x.s] || 0) + 1; });
     const last = stickers.length ? stickers[stickers.length - 1].s : null;
     let min = Infinity;
     pool.forEach(function (s) { if (s !== last) min = Math.min(min, count[s] || 0); });
@@ -1184,34 +1223,48 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   }
 
   // ------------------------------------------------------------ stickerboek
-  const PAGES = ['kaft', 'makkelijk', 'gemiddeld', 'moeilijk'];
+  const PAGES = ['kaft', '4-makkelijk', '4-gemiddeld', '4-moeilijk', '6-makkelijk', '6-gemiddeld', '6-moeilijk'];
+  const pageLevel = function (key) { return key.slice(2); };
+  const pageSize = function (key) { return Number(key[0]); };
   let bookPage = 0;
+  let bookSize = settings.size === 6 ? 6 : 4; // welk deel de tabbladen tonen als de kaft open ligt
   let pendingSticker = null;
 
-  function stickerCounts(level) {
+  function stickerCounts(key) {
     const c = {};
-    stickers.forEach(function (x) { if (x.level === level && x !== pendingSticker) c[x.s] = (c[x.s] || 0) + 1; });
+    stickers.forEach(function (x) { if (keyOf(x) === key && x !== pendingSticker) c[x.s] = (c[x.s] || 0) + 1; });
     return c;
   }
-  function ownedCount(level) {
-    const c = stickerCounts(level);
-    return STICKER_SETS[level].filter(function (s) { return c[s] > 0; }).length;
+  function ownedCount(key) {
+    const c = stickerCounts(key);
+    return STICKER_SETS[key].filter(function (s) { return c[s] > 0; }).length;
   }
   function tilt(k) { return ((k * 37) % 11) - 5; }
-  function stickerHtml(level, s, count, r) {
-    return '<span class="sticker lvl-' + level + '" style="--r: ' + r + 'deg">' + s +
+  function stickerHtml(key, s, count, r) {
+    const level = pageLevel(key);
+    return '<span class="sticker lvl-' + level + ' size-' + pageSize(key) + '" style="--r: ' + r + 'deg">' + s +
       '<span class="badge">' + STARS[level] + '</span>' +
       (count > 1 ? '<span class="count">×' + count + '</span>' : '') + '</span>';
   }
 
   function buildTabs() {
-    $('book-tabs').innerHTML = PAGES.map(function (p, i) {
-      return i === 0
-        ? '<button type="button" class="book-tab tab-cover" data-page="0">Kaft</button>'
-        : '<button type="button" class="book-tab lvl-' + p + '" data-page="' + i + '" aria-label="Bladzijde ' + LEVEL_NAMES[p] + '"><span class="lvl-stars">' + STARS[p] + '</span></button>';
-    }).join('');
+    $('book-tabs').innerHTML = '<button type="button" class="book-tab tab-cover" data-level="kaft">Kaft</button>' +
+      LEVELS3.map(function (l) {
+        return '<button type="button" class="book-tab lvl-' + l + '" data-level="' + l + '" aria-label="Bladzijde ' + LEVEL_NAMES[l] + '"><span class="lvl-stars">' + STARS[l] + '</span></button>';
+      }).join('');
     $('book-tabs').querySelectorAll('.book-tab').forEach(function (b) {
-      b.addEventListener('click', function () { flipTo(Number(b.dataset.page)); });
+      b.addEventListener('click', function () {
+        flipTo(b.dataset.level === 'kaft' ? 0 : PAGES.indexOf(bookSize + '-' + b.dataset.level));
+      });
+    });
+    $('book-sizes').querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        const size = Number(b.dataset.size);
+        const level = bookPage === 0 ? 'makkelijk' : pageLevel(PAGES[bookPage]);
+        bookSize = size;
+        if (bookPage !== 0 && pageSize(PAGES[bookPage]) === size) { applyPages(); return; }
+        flipTo(PAGES.indexOf(size + '-' + level));
+      });
     });
   }
 
@@ -1308,19 +1361,20 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
       '<p class="cover-ribbon">Mijn stickerboek</p>' +
       '<div class="cover-panel">' +
       (recent.length ? '<span class="cover-recent" aria-hidden="true">' + recent.map(function (x) {
-        return '<span class="sticker lvl-' + x.level + '">' + x.s + '</span>';
+        return '<span class="sticker lvl-' + x.level + ' size-' + x.size + '">' + x.s + '</span>';
       }).join('') + '</span>' : '') +
       '<span class="cover-text"><span class="cover-count">' + (placed.length ? placed.length + (placed.length === 1 ? ' sticker' : ' stickers') + ' verzameld' : 'Nog leeg. Los een puzzel op!') + '</span>' +
       '<span class="cover-hint">Tik om te openen ›</span></span></div></div>';
-    PAGES.slice(1).forEach(function (level, idx) {
-      const pool = STICKER_SETS[level];
-      const c = stickerCounts(level);
-      html += '<div class="page lvl-' + level + '" data-page="' + (idx + 1) + '">' +
-        '<p class="page-head"><span class="lvl-stars">' + STARS[level] + '</span> ' + LEVEL_NAMES[level] +
-        '<span class="tally">' + ownedCount(level) + ' van de ' + pool.length + '</span></p><div class="slots">';
+    PAGES.slice(1).forEach(function (key, idx) {
+      const level = pageLevel(key), size = pageSize(key);
+      const pool = STICKER_SETS[key];
+      const c = stickerCounts(key);
+      html += '<div class="page lvl-' + level + ' size-' + size + '" data-page="' + (idx + 1) + '">' +
+        '<p class="page-head"><span class="size-chip">' + size + '×' + size + '</span><span class="lvl-stars">' + STARS[level] + '</span> ' + LEVEL_NAMES[level] +
+        '<span class="tally">' + ownedCount(key) + ' van de ' + pool.length + '</span></p><div class="slots">';
       pool.forEach(function (s, k) {
         html += '<span class="slot" data-s="' + s + '">' +
-          (c[s] > 0 ? stickerHtml(level, s, c[s], tilt(k)) : '<span class="ghost" aria-hidden="true">' + s + '</span>') + '</span>';
+          (c[s] > 0 ? stickerHtml(key, s, c[s], tilt(k)) : '<span class="ghost" aria-hidden="true">' + s + '</span>') + '</span>';
       });
       html += '</div></div>';
     });
@@ -1338,13 +1392,19 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
       p.setAttribute('aria-hidden', i === bookPage ? 'false' : 'true');
       p.inert = i !== bookPage;
     });
+    const key = PAGES[bookPage];
+    if (bookPage !== 0) bookSize = pageSize(key);
+    const curLevel = bookPage === 0 ? 'kaft' : pageLevel(key);
     $('book-tabs').querySelectorAll('.book-tab').forEach(function (b) {
-      b.setAttribute('aria-current', Number(b.dataset.page) === bookPage ? 'true' : 'false');
+      b.setAttribute('aria-current', b.dataset.level === curLevel ? 'true' : 'false');
+    });
+    $('book-sizes').querySelectorAll('button').forEach(function (b) {
+      b.setAttribute('aria-pressed', Number(b.dataset.size) === bookSize ? 'true' : 'false');
     });
     $('page-prev').disabled = bookPage === 0;
     $('page-next').disabled = bookPage === PAGES.length - 1;
-    const level = PAGES[bookPage];
-    $('page-label').textContent = bookPage === 0 ? 'Kaft' : LEVEL_NAMES[level] + ' · ' + ownedCount(level) + ' van de ' + STICKER_SETS[level].length;
+    $('page-label').textContent = bookPage === 0 ? 'Kaft'
+      : pageSize(key) + '×' + pageSize(key) + ' · ' + LEVEL_NAMES[pageLevel(key)] + ' · ' + ownedCount(key) + ' van de ' + STICKER_SETS[key].length;
   }
 
   let flipping = null;
@@ -1388,7 +1448,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     return { x: x, y: y, w: el.offsetWidth };
   }
   function slotOf(entry) {
-    return $('pages').querySelector('.page[data-page="' + PAGES.indexOf(entry.level) + '"] .slot[data-s="' + entry.s + '"]');
+    return $('pages').querySelector('.page[data-page="' + PAGES.indexOf(keyOf(entry)) + '"] .slot[data-s="' + entry.s + '"]');
   }
 
   function stickIt() {
@@ -1396,7 +1456,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     if (!entry) { closeParty(); return; }
     const from = els.partySticker.getBoundingClientRect();
     els.party.hidden = true;
-    const pageIdx = PAGES.indexOf(entry.level);
+    const pageIdx = PAGES.indexOf(keyOf(entry));
     const slot = slotOf(entry);
 
     if (reduceMotion() || !slot) {
@@ -1411,7 +1471,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     // De sticker hangt in het document (niet vast op het scherm), zodat hij meeschuift.
     const size = from.width;
     const flyer = document.createElement('span');
-    flyer.className = 'sticker flyer lvl-' + entry.level;
+    flyer.className = 'sticker flyer lvl-' + entry.level + ' size-' + entry.size;
     flyer.innerHTML = entry.s + '<span class="badge">' + STARS[entry.level] + '</span>';
     flyer.style.width = size + 'px';
     flyer.style.height = size + 'px';
@@ -1459,7 +1519,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
       const tx = r.left + scrollX + r.width / 2 - size / 2;
       const ty = r.top + scrollY + r.height / 2 - size / 2; // in documentcoördinaten
       const ts = r.width / size;
-      const tr = tilt(STICKER_SETS[entry.level].indexOf(entry.s));
+      const tr = tilt(STICKER_SETS[keyOf(entry)].indexOf(entry.s));
       const bx = fx, by = fy, bs = fs, br = fr;
       setBubble('Daar hoort hij!');
       return tween(950, function (e, t) {
@@ -1483,10 +1543,12 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
       if (st) st.classList.add('slap');
       sounds.slap();
       persist();
-      const left = STICKER_SETS[entry.level].length - ownedCount(entry.level);
+      const key = keyOf(entry);
+      const left = STICKER_SETS[key].length - ownedCount(key);
+      const what = entry.size + '×' + entry.size + ' ' + STARS[entry.level];
       const msg = 'Geplakt! ' + (left
-        ? 'Nog ' + left + ' ' + STARS[entry.level] + '-stickers te verzamelen.'
-        : 'Je ' + STARS[entry.level] + '-bladzijde is helemaal vol!');
+        ? 'Nog ' + left + ' stickers te verzamelen op je ' + what + '-bladzijde.'
+        : 'Je ' + what + '-bladzijde is helemaal vol!');
       $('book-after-text').textContent = msg;
       $('book-after').hidden = false;
       setBubble(msg, 'yay');

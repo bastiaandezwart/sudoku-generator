@@ -436,8 +436,11 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   overflow: hidden;
   cursor: pointer;
   min-height: 340px;
+  aspect-ratio: 1000 / 1241;
   background: #ffd9ee;
 }
+.cover-art, .cover-art img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.cover-art img { object-fit: cover; object-position: center top; }
 .cover-scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .cover-ribbon {
   position: absolute;
@@ -464,14 +467,17 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
+  padding: 6px 12px;
   border-radius: 18px;
-  background: rgb(255 255 255 / 0.85);
+  background: rgb(255 255 255 / 0.82);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 1;
   color: var(--ink);
   box-shadow: 0 3px 0 rgb(58 43 92 / 0.12);
 }
 .cover-recent { display: flex; flex: none; }
-.cover-recent .sticker { width: 34px; font-size: 1.05rem; border-width: 2px; margin-right: -8px; }
+.cover-recent .sticker { width: 30px; font-size: 1.05rem; border-width: 2px; margin-right: -8px; }
 .cover-recent .sticker:nth-child(odd) { transform: rotate(-8deg); }
 .cover-recent .sticker:nth-child(even) { transform: rotate(7deg); }
 .cover-recent .sticker .badge { display: none; }
@@ -1356,9 +1362,12 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   function renderBook() {
     const placed = stickers.filter(function (x) { return x !== pendingSticker; });
     const recent = placed.slice(-4).reverse();
-    let html = '<div class="page cover" data-page="0" role="button" aria-label="Stickerboek openen">' +
+    // De kaft is Evi's eigen plaatje; de getekende kaft eronder is reserve als het plaatje niet laadt.
+    let html = '<div class="page cover" data-page="0" role="button" aria-label="Het stickerboek van Evi openen">' +
       coverScene() +
-      '<p class="cover-ribbon">Mijn stickerboek</p>' +
+      '<p class="cover-ribbon">Het stickerboek van Evi</p>' +
+      '<picture class="cover-art"><source srcset="assets/kaft-evi.webp" type="image/webp">' +
+      '<img src="assets/kaft-evi.jpg" alt="" width="1000" height="1241" decoding="async" onerror="this.parentNode.remove()"></picture>' +
       '<div class="cover-panel">' +
       (recent.length ? '<span class="cover-recent" aria-hidden="true">' + recent.map(function (x) {
         return '<span class="sticker lvl-' + x.level + ' size-' + x.size + '">' + x.s + '</span>';

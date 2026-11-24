@@ -1,5 +1,7 @@
 # Sudoku en puzzelpret: instructies voor Claude
 
+Lees eerst `OVERDRACHT.md`: daarin staat hoe het project in elkaar zit, wat er besloten is en hoe je de online versies (artifacts) bijwerkt.
+
 ## Regiebord
 De taken van dit project staan op het Regiebord: artifact 7a8b16fb-88d5-4045-aba7-9eca10a3b37f, project-id "sudoku".
 Gebruik de tools db_query, db_get en db_write van claude-artifacts met deze slug.

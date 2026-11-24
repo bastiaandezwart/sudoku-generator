@@ -29,6 +29,16 @@ Open `kids.html` voor een versie voor kinderen van 5 tot 8 jaar:
 - Het stickerboek is een boekje met een kaft en zes bladzijden: 4×4 en 6×6, elk met ★, ★★ en ★★★. Met het knopje 4×4 | 6×6 wissel je van deel. Je bladert met de pijltjes, de tabbladen of door te vegen. Op elk plekje zie je vaag de schaduw van de sticker die daar hoort. Na het oplossen tik je op **Plak in mijn boek!**: het boekje bladert naar de goede bladzijde en de sticker vliegt naar zijn plekje.
 - Geen timer. Het geluid en het meteen tonen van fouten kun je uitzetten.
 
+### Voor ouders: weet ze het of gokt ze?
+
+Onderaan Puzzelpret staat **"Voor ouders: hoe gaat het?"**. Je komt erin met een rekensommetje, zodat een kind er niet zomaar in komt. Elke zet wordt ingedeeld op basis van het bord zoals het kind het op dat moment zag:
+
+- **Wist het**: in één keer goed, op een plek waar maar één plaatje kon.
+- **Gegokt**: goed, maar er waren nog meer plaatjes mogelijk. **Geprobeerd**: goed, maar pas na een fout in hetzelfde vakje.
+- **Fout, botst**: het plaatje stond al in de rij, kolom of het vak. **Fout, past wel**: het mocht volgens de regels, maar was niet goed.
+
+Het scherm geeft een conclusie over de laatste 10 puzzels, de verdeling van alle zetten, het verloop per puzzel, opvallende dingen (zoals snel opnieuw proberen na een fout, of korter nadenken bij foute zetten) en tips. Per puzzel zie je elke zet als een gekleurd bolletje. De gegevens staan alleen in de browser van het apparaat (`localStorage`, sleutel `puzzelpret:log`).
+
 ## Roosters
 
 | Grootte | Blokken | Cijfers |

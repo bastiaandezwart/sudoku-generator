@@ -584,6 +584,83 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
 .link-btn { border: 0; background: none; color: var(--muted); font-weight: 500; text-decoration: underline; padding: 6px; }
 #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 30; }
 
+/* --- ouderscherm --- */
+.parent-btn { border: 0; background: none; color: var(--lilac); font-weight: 600; font-size: 0.8rem; text-decoration: underline; padding: 4px; }
+.parent-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow-y: auto;
+  background: rgb(58 43 92 / 0.45);
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) max(24px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px));
+}
+.parent-card {
+  max-width: 660px;
+  margin: 0 auto;
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 20px 18px 24px;
+  display: grid;
+  gap: 18px;
+  font-size: 15.5px;
+  box-shadow: 0 10px 30px rgb(58 43 92 / 0.25);
+}
+#parent-body { display: grid; gap: 18px; }
+.parent-card h2 { margin: 0; font-size: 1.45rem; line-height: 1.15; text-wrap: balance; }
+.parent-card h3 { margin: 0 0 8px; font-size: 1.05rem; }
+.parent-card p { margin: 0; }
+.parent-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.parent-sub { color: var(--muted); font-size: 0.9rem; margin-top: 4px !important; }
+.close-btn { border: 0; border-radius: 12px; padding: 8px 14px; background: var(--lilac-soft); font-weight: 600; flex: none; }
+.gate { display: grid; gap: 12px; }
+.gate form { display: flex; gap: 8px; flex-wrap: wrap; }
+.gate input { width: 6.5em; font: inherit; font-size: 1.2rem; padding: 8px 12px; border-radius: 12px; border: 2px solid var(--lilac-soft); }
+.gate .mini-btn { font-size: 1rem; }
+.gate-error { color: var(--red); font-weight: 500; }
+.verdict { border-radius: 18px; padding: 14px 16px; display: grid; gap: 6px; background: var(--v-soft); border: 2px solid var(--v); }
+.verdict.good { --v: #1fa57f; --v-soft: var(--mint-soft); }
+.verdict.mixed { --v: #d98a00; --v-soft: var(--sun-soft); }
+.verdict.guess { --v: var(--red); --v-soft: var(--red-soft); }
+.verdict.none { --v: var(--lilac); --v-soft: var(--lilac-soft); }
+.verdict-title { display: flex; align-items: center; gap: 8px; font-size: 1.2rem; font-weight: 700; }
+.verdict-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--v); flex: none; }
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 520px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.tile { background: var(--bg); border-radius: 14px; padding: 10px 12px; display: grid; gap: 2px; }
+.tile b { font-size: 1.35rem; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.tile span { font-size: 0.8rem; color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.85rem; color: var(--ink); }
+.legend i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+.k-L { background: #1fa57f; } .k-G { background: #eea21a; } .k-F { background: #e2405a; } .k-H { background: #8f6cff; } .k-E { background: #c9c2db; }
+.stack { display: flex; gap: 2px; height: 16px; border-radius: 4px; overflow: hidden; background: var(--bg); }
+.stack.big { height: 26px; border-radius: 6px; }
+.stack span { display: block; min-width: 3px; }
+.stack-nums { font-size: 0.82rem; color: var(--muted); margin-top: 4px; font-variant-numeric: tabular-nums; }
+.trend { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: stretch; }
+.trend-axis { display: flex; flex-direction: column; justify-content: space-between; height: 110px; font-size: 0.72rem; line-height: 1; color: var(--muted); text-align: right; margin: -0.36rem 0; }
+.trend-plot { display: flex; align-items: flex-end; gap: 4px; height: 110px; border-bottom: 1px solid #e3ddf0; background: linear-gradient(#efeaf8 1px, transparent 1px) 0 0 / 100% 50%; position: relative; }
+.trend-bar { flex: 1 1 0; max-width: 34px; min-width: 6px; background: #1fa57f; border-radius: 4px 4px 0 0; position: relative; }
+.trend-bar.unsolved { background: repeating-linear-gradient(135deg, #1fa57f 0 4px, #8fd8c0 4px 7px); }
+.trend-x { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); margin-top: 4px; grid-column: 2; }
+.notes-list { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+.tips { background: var(--sky-soft); border-radius: 16px; padding: 14px 16px; }
+.game-list { display: grid; gap: 10px; }
+.game-row { border: 1px solid #ece6f7; border-radius: 14px; padding: 10px 12px; display: grid; gap: 6px; }
+.game-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 0.85rem; color: var(--muted); align-items: baseline; }
+.game-meta b { color: var(--ink); font-size: 0.95rem; }
+.chip { border-radius: 999px; padding: 0 8px; font-size: 0.75rem; font-weight: 600; }
+.chip.ok { background: var(--mint-soft); color: #137a5c; }
+.chip.open { background: var(--lilac-soft); color: var(--muted); }
+.moves { display: flex; flex-wrap: wrap; gap: 3px; }
+.moves i { width: 10px; height: 10px; border-radius: 50%; display: block; }
+.moves i.k-E { width: 6px; height: 6px; margin: 2px; }
+.moves i.quick { box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px #e2405a; }
+.how { font-size: 0.9rem; color: var(--ink); }
+.how summary { cursor: pointer; font-weight: 600; }
+.how div { display: grid; gap: 8px; margin-top: 8px; }
+.danger-link { border: 0; background: none; color: var(--red); text-decoration: underline; font-size: 0.85rem; padding: 4px 0; justify-self: start; }
+.danger-link.armed { font-weight: 700; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
@@ -671,7 +748,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
     </div>
   </section>
 
-  <p class="grown-ups">Voor grote mensen: <a href="index.html">Sudokumaker</a> met cijfers, 9×9 en vier niveaus.</p>
+  <p class="grown-ups">Voor grote mensen: <a href="index.html">Sudokumaker</a> met cijfers, 9×9 en vier niveaus. · <button class="parent-btn" type="button" id="parent-open">Voor ouders: hoe gaat het?</button></p>
 </div>
 
 <div class="party" id="party" hidden>
@@ -688,6 +765,27 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   </div>
 </div>
 <canvas id="confetti" hidden></canvas>
+
+<div class="parent-overlay" id="parent" hidden role="dialog" aria-modal="true" aria-labelledby="parent-title">
+  <div class="parent-card">
+    <div class="parent-head">
+      <div>
+        <h2 id="parent-title">Voor ouders</h2>
+        <p class="parent-sub" id="parent-sub">Alles blijft op dit apparaat.</p>
+      </div>
+      <button class="close-btn" type="button" id="parent-close">Sluiten</button>
+    </div>
+    <div class="gate" id="parent-gate">
+      <p>Even checken of je een grote mens bent. Hoeveel is <b id="gate-q"></b>?</p>
+      <form id="gate-form" autocomplete="off">
+        <input id="gate-input" type="text" inputmode="numeric" aria-label="Antwoord">
+        <button class="mini-btn" type="submit">Verder</button>
+      </form>
+      <p class="gate-error" id="gate-error" hidden>Dat klopt niet. Probeer het nog eens.</p>
+    </div>
+    <div id="parent-body" hidden></div>
+  </div>
+</div>
 
 <script src="sudoku.js"></script>
 <script>
@@ -757,6 +855,66 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
         game: game && { code: game.code, values, hinted: [...hinted], mistakes, hints, solved },
       }));
     } catch (e) { /* opslaan niet mogelijk */ }
+  }
+
+  // ------------------------------------------------------------ zetten bijhouden (voor ouders)
+  // Elke zet wordt ingedeeld op basis van het bord zoals het kind het op dat moment zag:
+  //   L = wist het: in één keer goed, op een plek waar maar één plaatje kon (naked of hidden single)
+  //   G = gegokt: goed, maar er waren nog meer plaatjes mogelijk
+  //   P = geprobeerd: goed, maar eerder in dit vakje al een fout plaatje gelegd
+  //   W = fout, past wel volgens de regels   B = fout, botst met rij/kolom/vak
+  //   E = gegumd   H = hulp gebruikt   R = opnieuw begonnen
+  const LOG_KEY = 'puzzelpret:log';
+  let gameLog = (function () {
+    try { const l = JSON.parse(localStorage.getItem(LOG_KEY) || 'null'); return l && Array.isArray(l.games) ? l : { games: [] }; }
+    catch (e) { return { games: [] }; }
+  })();
+  let rec = null; // het verslag van de huidige puzzel
+  function saveLog() {
+    gameLog.games = gameLog.games.slice(-60);
+    try { localStorage.setItem(LOG_KEY, JSON.stringify(gameLog)); } catch (e) { /* opslaan niet mogelijk */ }
+  }
+  function logStart() {
+    const last = gameLog.games[gameLog.games.length - 1];
+    if (last && last.code === game.code && !last.end) { rec = last; return; }
+    if (last && !last.end) last.end = Date.now(); // vorige puzzel niet afgemaakt
+    rec = { code: game.code, size: game.size, level: game.level, start: Date.now(), end: 0, solved: false, fb: settings.showMistakes ? 1 : 0, moves: [] };
+    gameLog.games.push(rec);
+    saveLog();
+  }
+  function logMove(kind, i, v, opts) {
+    if (!rec || rec.end || rec.moves.length > 600) return;
+    const t = Date.now() - rec.start;
+    const prev = rec.moves[rec.moves.length - 1];
+    const quick = prev && prev[1] === i && (prev[3] === 'W' || prev[3] === 'B') && t - prev[0] < 6000 && kind !== 'H' ? 1 : 0;
+    rec.moves.push([t, i, v, kind, opts == null ? 0 : opts, quick]);
+    saveLog();
+  }
+  function logPlace(i, v) {
+    const geo = S.geometry(game.size);
+    const legal = function (cell, val) { return !geo.peers[cell].some(function (p) { return values[p] === val; }); };
+    let opts = 0;
+    for (let d = 1; d <= game.size; d++) if (legal(i, d)) opts++;
+    let kind;
+    if (!legal(i, v)) kind = 'B';
+    else if (v !== game.solution[i]) kind = 'W';
+    else if (rec && rec.moves.some(function (m) { return m[1] === i && (m[3] === 'W' || m[3] === 'B'); })) kind = 'P';
+    else {
+      let forced = opts === 1;
+      if (!forced) {
+        [geo.rows[geo.rowOf[i]], geo.cols[geo.colOf[i]], geo.boxes[geo.boxOf[i]]].forEach(function (unit) {
+          if (!unit.some(function (c) { return c !== i && !values[c] && legal(c, v); })) forced = true;
+        });
+      }
+      kind = forced ? 'L' : 'G';
+    }
+    logMove(kind, i, v, opts);
+  }
+  function logEnd(solvedIt) {
+    if (!rec || rec.end) return;
+    rec.end = Date.now();
+    rec.solved = solvedIt;
+    saveLog();
   }
 
   // ------------------------------------------------------------ geluid
@@ -895,6 +1053,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
       if (settings.showMistakes) values.forEach(function (v, i) { if (v && v !== game.solution[i]) wrong.add(i); });
     }
     disarmReset();
+    if (!solved) logStart(); else rec = null;
     buildBoard();
     buildPalette();
     render();
@@ -1096,6 +1255,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
 
   function place(i, v) {
     if (values[i] === v) { render(); return; }
+    logPlace(i, v);
     const conflict = conflictWith(i, v);
     values[i] = v;
     lastPlaced = i;
@@ -1127,6 +1287,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
 
   function erase(i) {
     if (!values[i]) { render(); return; }
+    logMove('E', i, 0);
     values[i] = 0;
     wrong.delete(i);
     sounds.erase();
@@ -1161,6 +1322,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
       i = pool[Math.floor(Math.random() * pool.length)];
     }
     const v = game.solution[i];
+    logMove('H', i, v);
     values[i] = v;
     hinted.add(i);
     wrong.delete(i);
@@ -1186,6 +1348,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   }
 
   function win() {
+    logEnd(true);
     solved = true;
     selected = -1;
     held = null;
@@ -1611,6 +1774,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
       return;
     }
     disarmReset();
+    logMove('R', -1, 0);
     values = game.puzzle.slice();
     hinted = new Set(); wrong = new Set();
     mistakes = 0; hints = 0; selected = -1; correctStreak = 0;
@@ -1673,6 +1837,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   els.sound.addEventListener('click', function () { settings.sound = !settings.sound; syncChoices(); persist(); if (settings.sound) sounds.pop(); });
   els.mistakes.addEventListener('click', function () {
     settings.showMistakes = !settings.showMistakes;
+    if (rec) { rec.fb = 2; saveLog(); } // gemengd
     if (!settings.showMistakes) wrong = new Set();
     else values.forEach(function (v, i) { if (v && v !== game.solution[i]) wrong.add(i); });
     setBubble(settings.showMistakes ? 'Ik laat het meteen zien als iets niet past.' : 'Ik zeg pas iets als de puzzel vol is. Spannend!');
@@ -1680,6 +1845,7 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
   });
 
   document.addEventListener('keydown', function (e) {
+    if (!$('parent').hidden) { if (e.key === 'Escape') closeParent(); return; }
     if (!game || e.ctrlKey || e.metaKey || e.altKey) return;
     if (!els.party.hidden) { if (e.key === 'Escape') closeParty(); return; }
     const size = game.size;
@@ -1700,6 +1866,208 @@ h1 span:nth-child(6n) { color: var(--red); transform: rotate(2deg); }
       cells[selected].focus({ preventScroll: true });
       render();
     }
+  });
+
+  // ------------------------------------------------------------ ouderscherm
+  const KIND_NAMES = { L: 'wist het', G: 'gegokt (goed)', P: 'goed na proberen', W: 'fout (past wel)', B: 'fout (botst)', E: 'gegumd', H: 'hulp', R: 'opnieuw' };
+  const KIND_CLASS = { L: 'k-L', G: 'k-G', P: 'k-G', W: 'k-F', B: 'k-F', H: 'k-H', E: 'k-E', R: 'k-E' };
+  let gateAnswer = 0;
+
+  function median(a) {
+    if (!a.length) return 0;
+    const b = a.slice().sort(function (x, y) { return x - y; });
+    const m = Math.floor(b.length / 2);
+    return b.length % 2 ? b[m] : (b[m - 1] + b[m]) / 2;
+  }
+  function summarize(g) {
+    const c = { L: 0, G: 0, P: 0, W: 0, B: 0, H: 0, E: 0, R: 0 };
+    let quick = 0, active = 0, prevT = 0;
+    const thinkGood = [], thinkBad = [];
+    g.moves.forEach(function (m) {
+      const dt = Math.min(60000, m[0] - prevT);
+      prevT = m[0];
+      active += dt;
+      c[m[3]] = (c[m[3]] || 0) + 1;
+      if (m[5]) quick++;
+      if (m[3] === 'L') thinkGood.push(dt);
+      if (m[3] === 'W' || m[3] === 'B') thinkBad.push(dt);
+    });
+    const placed = c.L + c.G + c.P + c.W + c.B;
+    return { c: c, placed: placed, quick: quick, active: active, thinkGood: thinkGood, thinkBad: thinkBad };
+  }
+  function fmtDur(ms) {
+    const s = Math.round(ms / 1000);
+    return s < 60 ? s + ' s' : Math.floor(s / 60) + ' min ' + String(s % 60).padStart(2, '0') + ' s';
+  }
+  function fmtDay(t) {
+    const d = new Date(t), now = new Date();
+    const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diff = Math.round((today - day) / 86400000);
+    const hm = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    if (diff === 0) return 'vandaag ' + hm;
+    if (diff === 1) return 'gisteren ' + hm;
+    return d.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' }) + ' ' + hm;
+  }
+  function pct(a, b) { return b ? Math.round(a / b * 100) : 0; }
+  function stackHtml(c, big) {
+    const parts = [['L', c.L], ['G', c.G + c.P], ['F', c.W + c.B], ['H', c.H]];
+    const names = { L: 'Wist het', G: 'Gegokt of geprobeerd', F: 'Fout', H: 'Hulp' };
+    const total = parts.reduce(function (t, p) { return t + p[1]; }, 0) || 1;
+    return '<div class="stack' + (big ? ' big' : '') + '" role="img" aria-label="' + parts.map(function (p) { return names[p[0]] + ': ' + p[1]; }).join(', ') + '">' +
+      parts.filter(function (p) { return p[1] > 0; }).map(function (p) {
+        return '<span class="k-' + p[0] + '" style="flex: ' + p[1] + ' 1 0" title="' + names[p[0]] + ': ' + p[1] + ' van ' + total + ' (' + pct(p[1], total) + '%)"></span>';
+      }).join('') + '</div>';
+  }
+
+  function renderParent() {
+    const all = gameLog.games.filter(function (g) { return g.moves.length; });
+    const recent = all.slice(-10);
+    const sums = recent.map(summarize);
+    const tot = { L: 0, G: 0, P: 0, W: 0, B: 0, H: 0, E: 0, R: 0 };
+    let quick = 0, active = 0;
+    const tg = [], tb = [];
+    sums.forEach(function (s) {
+      Object.keys(tot).forEach(function (k) { tot[k] += s.c[k] || 0; });
+      quick += s.quick; active += s.active;
+      tg.push.apply(tg, s.thinkGood); tb.push.apply(tb, s.thinkBad);
+    });
+    const placed = tot.L + tot.G + tot.P + tot.W + tot.B;
+    const solvedN = recent.filter(function (g) { return g.solved; }).length;
+    const know = placed ? tot.L / placed : 0;
+    const wrongN = tot.W + tot.B;
+
+    let vClass, vTitle, vText;
+    if (placed < 8) {
+      vClass = 'none'; vTitle = 'Nog te weinig gegevens';
+      vText = 'Laat Evi eerst een paar puzzels maken. Vanaf ongeveer 8 neergelegde plaatjes zie je hier hoe het gaat.';
+    } else if (know >= 0.7 && wrongN / placed <= 0.15) {
+      vClass = 'good'; vTitle = 'Evi weet het meestal';
+      vText = tot.L + ' van de ' + placed + ' plaatjes (' + pct(tot.L, placed) + '%) legde ze in één keer goed, op een plek waar het zeker was. Ze redeneert dus echt.';
+    } else if (know >= 0.45) {
+      vClass = 'mixed'; vTitle = 'Evi wisselt weten en gokken af';
+      vText = 'Bij ' + pct(tot.L, placed) + '% van de plaatjes wist ze het zeker. Bij ' + pct(placed - tot.L, placed) + '% gokte of probeerde ze, of was het fout.';
+    } else {
+      vClass = 'guess'; vTitle = 'Evi gokt vaak';
+      vText = 'Maar ' + tot.L + ' van de ' + placed + ' plaatjes (' + pct(tot.L, placed) + '%) legde ze in één keer goed op een plek waar het zeker was. De rest was gokken, proberen of fout.';
+    }
+
+    // Opvallende dingen
+    const notes = [];
+    if (placed >= 8) {
+      if (tot.B >= 2 && tot.B / placed >= 0.1) notes.push(tot.B + ' keer legde ze een plaatje neer dat al in dezelfde rij, kolom of hetzelfde vak stond. Ze kijkt dan nog niet goed naar de regels.');
+      if (quick >= 3) notes.push(quick + ' keer probeerde ze binnen 6 seconden na een fout meteen een ander plaatje in hetzelfde vakje. Dat is uitproberen, niet nadenken.');
+      else if (tot.P >= 2) notes.push(tot.P + ' keer kwam ze pas na een fout op het goede plaatje.');
+      if (tot.G >= 2 && tot.G / placed >= 0.15) notes.push(tot.G + ' keer vulde ze een vakje in waar nog meer plaatjes mogelijk waren. Het was goed, maar dat was geluk: op dat moment kon je het nog niet zeker weten.');
+      if (tb.length >= 3 && tg.length >= 3 && median(tb) < median(tg) * 0.7) notes.push('Bij foute zetten dacht ze korter na (meestal ' + fmtDur(median(tb)) + ') dan bij zetten die ze wist (' + fmtDur(median(tg)) + '). Als ze haast heeft, gaat het vaker mis.');
+      if (recent.length && tot.H / recent.length >= 1.5) notes.push('Ze gebruikt gemiddeld ' + (tot.H / recent.length).toFixed(1).replace('.', ',') + ' keer "Help mij" per puzzel.');
+      if (!notes.length) notes.push('Geen bijzonderheden: weinig fouten en weinig gokwerk.');
+    }
+
+    // Tips
+    const tips = [];
+    if (placed >= 8 && vClass !== 'good') {
+      if (settings.showMistakes) tips.push('Zet <b>"Fouten meteen laten zien"</b> uit (onder de puzzel). Nu ziet ze direct of iets fout is en kan ze blijven proberen tot het goed is. Zonder die hulp moet ze eerst nadenken.');
+      tips.push('Puzzel een keer samen. Wijs een leeg vakje aan en vraag: "Welke plaatjes staan al in deze rij? En in deze kolom? En in dit vak? Welke blijft er over?"');
+      tips.push('Vraag na een zet: "Hoe wist je dat?" Als ze het kan uitleggen, wist ze het. Als ze schouderophalend "zomaar" zegt, was het gokken.');
+      tips.push('Leer haar zoeken naar het vakje waar maar één plaatje kan, in plaats van zomaar ergens te beginnen.');
+      if (tot.B / placed >= 0.15) tips.push('Ga even terug naar <b>4×4 met ★</b>. Daar zijn de regels het makkelijkst te zien.');
+    } else if (vClass === 'good') {
+      tips.push('Ze is klaar voor meer uitdaging: probeer een niveau hoger (meer sterren) of <b>6×6</b>.');
+    }
+
+    // Verloop: % wist het per puzzel
+    const trend = all.slice(-15).map(function (g) { const s = summarize(g); return { k: s.placed ? s.c.L / s.placed : 0, n: s.placed, g: g }; })
+      .filter(function (x) { return x.n > 0; });
+
+    let html = '';
+    html += '<div class="verdict ' + vClass + '"><div class="verdict-title"><span class="verdict-dot" aria-hidden="true"></span>' + vTitle + '</div><p>' + vText + '</p></div>';
+    html += '<div class="tiles">' +
+      '<div class="tile"><b>' + recent.length + '</b><span>puzzels bekeken</span></div>' +
+      '<div class="tile"><b>' + solvedN + '</b><span>opgelost</span></div>' +
+      '<div class="tile"><b>' + (recent.length ? fmtDur(active / recent.length) : '–') + '</b><span>per puzzel</span></div>' +
+      '<div class="tile"><b>' + (recent.length ? (tot.H / recent.length).toFixed(1).replace('.', ',') : '–') + '</b><span>keer hulp per puzzel</span></div></div>';
+    if (placed) {
+      html += '<section><h3>Alle neergelegde plaatjes</h3>' +
+        '<div class="legend"><span><i class="k-L"></i>Wist het</span><span><i class="k-G"></i>Gegokt of geprobeerd</span><span><i class="k-F"></i>Fout</span><span><i class="k-H"></i>Hulp</span></div>' +
+        '<div style="margin-top: 8px">' + stackHtml(tot, true) + '</div>' +
+        '<p class="stack-nums">' + tot.L + ' wist het · ' + (tot.G + tot.P) + ' gegokt of geprobeerd · ' + wrongN + ' fout (' + tot.B + ' botst, ' + tot.W + ' past wel) · ' + tot.H + ' hulp</p></section>';
+    }
+    if (trend.length >= 2) {
+      html += '<section><h3>Wist het, per puzzel</h3><p class="parent-sub" style="margin: -4px 0 8px !important">Hoe hoger de staaf, hoe meer ze zeker wist. Gestreept: niet afgemaakt.</p>' +
+        '<div class="trend"><div class="trend-axis" aria-hidden="true"><span>100%</span><span>50%</span><span>0%</span></div>' +
+        '<div class="trend-plot" role="img" aria-label="Percentage wist het per puzzel, van oud naar nieuw: ' + trend.map(function (x) { return Math.round(x.k * 100) + '%'; }).join(', ') + '">' +
+        trend.map(function (x) {
+          return '<span class="trend-bar' + (x.g.solved ? '' : ' unsolved') + '" style="height: ' + Math.max(2, x.k * 100) + '%" title="' + fmtDay(x.g.start) + ' · ' + x.g.size + '×' + x.g.size + ' ' + STARS[x.g.level] + ' · ' + Math.round(x.k * 100) + '% wist het"></span>';
+        }).join('') + '</div><div class="trend-x" aria-hidden="true"><span>ouder</span><span>nieuwste</span></div></div></section>';
+    }
+    if (placed >= 8) {
+      html += '<section><h3>Wat valt op?</h3><ul class="notes-list">' + notes.map(function (n) { return '<li>' + n + '</li>'; }).join('') + '</ul></section>';
+      html += '<section class="tips"><h3>Wat kun je doen?</h3><ul class="notes-list">' + tips.map(function (n) { return '<li>' + n + '</li>'; }).join('') + '</ul></section>';
+    }
+    if (all.length) {
+      html += '<section><h3>Per puzzel</h3><p class="parent-sub" style="margin: -4px 0 10px !important">Elk bolletje is een zet, in de volgorde waarin ze speelde. Een rode ring: snel opnieuw geprobeerd na een fout.</p><div class="game-list">' +
+        all.slice(-15).reverse().map(function (g) {
+          const s = summarize(g);
+          return '<div class="game-row"><div class="game-meta"><b>' + g.size + '×' + g.size + ' ' + STARS[g.level] + '</b><span>' + fmtDay(g.start) + '</span>' +
+            '<span class="chip ' + (g.solved ? 'ok' : 'open') + '">' + (g.solved ? 'opgelost' : (g.end ? 'niet afgemaakt' : 'bezig')) + '</span>' +
+            '<span>' + fmtDur(s.active) + '</span>' + (g.fb === 0 ? '<span>fouten niet getoond</span>' : '') + '</div>' +
+            stackHtml(s.c, false) +
+            '<p class="stack-nums">' + s.c.L + ' wist het · ' + (s.c.G + s.c.P) + ' gegokt of geprobeerd · ' + (s.c.W + s.c.B) + ' fout · ' + s.c.H + ' hulp</p>' +
+            '<div class="moves" aria-hidden="true">' + g.moves.map(function (m) {
+              return '<i class="' + KIND_CLASS[m[3]] + (m[5] ? ' quick' : '') + '" title="' + fmtDur(m[0]) + ': ' + KIND_NAMES[m[3]] + (m[4] ? ' (' + m[4] + ' mogelijk)' : '') + '"></i>';
+            }).join('') + '</div></div>';
+        }).join('') + '</div></section>';
+    }
+    html += '<details class="how"><summary>Hoe wordt dit gemeten?</summary><div>' +
+      '<p>Bij elk plaatje dat Evi neerlegt, kijkt de puzzel naar het bord zoals zij het op dat moment zag:</p>' +
+      '<p><b>Wist het</b>: in één keer goed, op een plek waar maar één plaatje kon. Dat kon door wat er al in de rij, kolom of het vak stond, of omdat een plaatje in die rij, kolom of dat vak nergens anders meer paste.</p>' +
+      '<p><b>Gegokt</b>: goed, maar er waren op dat moment nog meer plaatjes mogelijk. <b>Geprobeerd</b>: goed, maar pas nadat ze in dat vakje eerst een fout plaatje had gelegd.</p>' +
+      '<p><b>Fout, botst</b>: hetzelfde plaatje stond al in de rij, kolom of het vak. <b>Fout, past wel</b>: het mocht volgens de regels, maar het was niet het goede plaatje.</p>' +
+      '<p>Kinderen redeneren soms op hun eigen manier. Zie dit als een aanwijzing, niet als een cijfer. Samen puzzelen en vragen "hoe wist je dat?" zegt het meest.</p>' +
+      '<p>De gegevens staan alleen op dit apparaat, in deze browser.</p></div></details>';
+    if (all.length) html += '<button class="danger-link" type="button" id="log-clear">Alle gegevens wissen</button>';
+
+    $('parent-body').innerHTML = html;
+    $('parent-sub').textContent = recent.length ? 'Gebaseerd op de laatste ' + recent.length + (recent.length === 1 ? ' puzzel' : ' puzzels') + ' op dit apparaat. Alles blijft op dit apparaat.' : 'Alles blijft op dit apparaat.';
+    const clr = $('log-clear');
+    if (clr) clr.addEventListener('click', function () {
+      if (!clr.classList.contains('armed')) {
+        clr.classList.add('armed');
+        clr.textContent = 'Zeker weten? Tik nog eens om alles te wissen';
+        setTimeout(function () { if (clr.isConnected) { clr.classList.remove('armed'); clr.textContent = 'Alle gegevens wissen'; } }, 4000);
+        return;
+      }
+      gameLog = { games: [] };
+      saveLog();
+      if (game && !solved) logStart();
+      renderParent();
+    });
+  }
+
+  function openParent() {
+    const a = 6 + Math.floor(Math.random() * 4), b = 6 + Math.floor(Math.random() * 4);
+    gateAnswer = a * b;
+    $('gate-q').textContent = a + ' × ' + b;
+    $('gate-input').value = '';
+    $('gate-error').hidden = true;
+    $('parent-gate').hidden = false;
+    $('parent-body').hidden = true;
+    $('parent-title').textContent = 'Voor ouders';
+    $('parent').hidden = false;
+    $('gate-input').focus();
+  }
+  function closeParent() { $('parent').hidden = true; }
+  $('parent-open').addEventListener('click', openParent);
+  $('parent-close').addEventListener('click', closeParent);
+  $('parent').addEventListener('click', function (e) { if (e.target === $('parent')) closeParent(); });
+  $('gate-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (Number($('gate-input').value.trim()) !== gateAnswer) { $('gate-error').hidden = false; $('gate-input').select(); return; }
+    $('parent-gate').hidden = true;
+    $('parent-title').textContent = 'Hoe gaat het met puzzelen?';
+    renderParent();
+    $('parent-body').hidden = false;
   });
 
   // ------------------------------------------------------------ start
